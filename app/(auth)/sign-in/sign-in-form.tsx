@@ -48,23 +48,26 @@ function SignInFormInner() {
     setLoading(true);
     setError(null);
 
+    const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+
     const { error } = await authClient.signIn.email({
       email,
       password,
-      callbackURL: "/",
+      callbackURL: callbackUrl,
     });
 
     if (error) {
       setError(error.message ?? "Произошла ошибка при входе");
       setLoading(false);
     } else {
-      router.push("/");
+      router.push(callbackUrl);
     }
   }
 
   async function handleSocial(provider: "google" | "github") {
     setSocialLoading(provider);
-    await authClient.signIn.social({ provider, callbackURL: "/" });
+    const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+    await authClient.signIn.social({ provider, callbackURL: callbackUrl });
     setSocialLoading(null);
   }
 
