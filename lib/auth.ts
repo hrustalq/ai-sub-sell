@@ -1,24 +1,37 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { createElement } from "react";
 import db from "./db";
+import { sendEmail } from "./email";
+import { ResetPasswordEmail } from "../emails/reset-password";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "sqlite",
   }),
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Сброс пароля — AI Sub Sell",
+        template: createElement(ResetPasswordEmail, {
+          userName: user.name,
+          resetUrl: url,
+        }),
+      });
+    },
+  },
   socialProviders: {
-    google: { 
-        clientId: process.env.GOOGLE_CLIENT_ID as string, 
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
     github: {
-        clientId: process.env.GITHUB_CLIENT_ID as string,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
-    emailAndPassword: { 
-      enabled: true, 
-    }, 
-},
-  plugins: [nextCookies()]
+  },
+  plugins: [nextCookies()],
 });
