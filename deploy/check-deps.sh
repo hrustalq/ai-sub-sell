@@ -4,6 +4,7 @@ set -euo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 errors=0
@@ -57,10 +58,21 @@ if command -v pnpm >/dev/null 2>&1; then
 fi
 
 if command -v nginx >/dev/null 2>&1; then
-  nginx -t >/dev/null 2>&1 && echo -e "${GREEN}✓${NC} nginx config test passed" || {
+  nginx_test_ok=0
+  if nginx -t >/dev/null 2>&1; then
+    nginx_test_ok=1
+  elif [[ "${EUID:-$(id -u)}" -ne 0 ]] && sudo -n nginx -t >/dev/null 2>&1; then
+    nginx_test_ok=1
+  fi
+
+  if [[ "$nginx_test_ok" -eq 1 ]]; then
+    echo -e "${GREEN}✓${NC} nginx config test passed"
+  elif [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+    echo -e "${YELLOW}!${NC} nginx -t skipped (non-root cannot read SSL files; run: sudo nginx -t)"
+  else
     echo -e "${RED}✗${NC} nginx -t failed (fix config before deploy)"
     errors=$((errors + 1))
-  }
+  fi
 fi
 
 if command -v certbot >/dev/null 2>&1; then

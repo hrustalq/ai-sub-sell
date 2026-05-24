@@ -2,6 +2,9 @@
 # Production deploy: pull code, migrate DB (without overwriting data), build, restart.
 set -euo pipefail
 
+# Avoid interactive Corepack download prompt when deploy runs as a non-root user.
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
 APP_ROOT="${APP_ROOT:-/opt/ai-sub-sell}"
 APP_DIR="${APP_DIR:-$APP_ROOT/app}"
 SHARED_DIR="${SHARED_DIR:-$APP_ROOT/shared}"

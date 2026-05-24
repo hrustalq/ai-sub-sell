@@ -36,10 +36,12 @@ Verify before setup:
 On the VPS as root:
 
 ```bash
-export CERTBOT_EMAIL=you@example.com
-export REPO_URL=git@github.com:YOUR_ORG/ai-sub-sell.git   # optional; or clone manually
+# export alone is not passed through sudo — inline it or use the 3rd argument:
+sudo CERTBOT_EMAIL=you@example.com bash deploy/setup-server.sh ai-sub.store
+# or:
+sudo bash deploy/setup-server.sh ai-sub.store ai-sub-sell you@example.com
 
-sudo bash deploy/setup-server.sh ai-sub.store
+export REPO_URL=git@github.com:YOUR_ORG/ai-sub-sell.git   # optional; or clone manually
 ```
 
 Then edit `/opt/ai-sub-sell/shared/.env` (see `deploy/env.production.example`). Ensure:

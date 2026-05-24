@@ -9,6 +9,7 @@ fi
 
 DOMAIN="${1:-}"
 DEPLOY_USER="${2:-ai-sub-sell}"
+CERTBOT_EMAIL="${CERTBOT_EMAIL:-${3:-}}"
 APP_ROOT="${APP_ROOT:-/opt/ai-sub-sell}"
 APP_DIR="$APP_ROOT/app"
 SHARED_DIR="$APP_ROOT/shared"
@@ -64,8 +65,10 @@ systemctl reload nginx
 
 # Initial certificate
 if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
-  if [[ -z "${CERTBOT_EMAIL:-}" ]]; then
-    echo "Set CERTBOT_EMAIL=you@example.com for Lets Encrypt, then re-run."
+  if [[ -z "${CERTBOT_EMAIL}" ]]; then
+    echo "Certbot email required. Either:"
+    echo "  sudo CERTBOT_EMAIL=you@example.com bash $0 $DOMAIN"
+    echo "  sudo bash $0 $DOMAIN ai-sub-sell you@example.com"
     exit 1
   fi
   certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$CERTBOT_EMAIL" || {
