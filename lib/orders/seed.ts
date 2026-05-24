@@ -123,13 +123,6 @@ async function clearSeedOrders(db: PrismaClient) {
   await db.order.deleteMany({ where: { id: { in: orderIds } } });
 }
 
-type PlanSnapshot = {
-  id: string;
-  name: string;
-  price: number;
-  currency: string;
-};
-
 export async function seedDemoOrders(db: PrismaClient): Promise<void> {
   const plan = await db.plan.findFirst({
     where: { active: true },

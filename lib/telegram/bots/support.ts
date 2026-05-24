@@ -5,7 +5,7 @@ import { SITE_NAME } from "@/lib/brand";
 import { upsertTelegramAccount } from "@/lib/telegram/accounts";
 import { getSupportBotToken, isSupportTelegramUser } from "@/lib/telegram/config";
 import { escapeHtml, formatOrderSummary, truncate } from "@/lib/telegram/format";
-import { CB, supportOrderActionsKeyboard, supportOrderListKeyboard } from "@/lib/telegram/keyboards";
+import { supportOrderActionsKeyboard, supportOrderListKeyboard } from "@/lib/telegram/keyboards";
 import {
   getOrderChatMessages,
   postSellerMessage,

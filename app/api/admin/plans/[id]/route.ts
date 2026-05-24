@@ -72,8 +72,8 @@ export async function PATCH(
     return Response.json({ error: parsed.error }, { status: 400 });
   }
 
-  const { id: _recordId, ...data } = planToDbRecord(toPlanData(parsed, id));
-  const row = await db.plan.update({ where: { id }, data });
+  const { id: planRecordId, ...data } = planToDbRecord(toPlanData(parsed, id));
+  const row = await db.plan.update({ where: { id: planRecordId }, data });
 
   return Response.json({ plan: mapPlanRow(row) });
 }

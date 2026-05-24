@@ -32,6 +32,7 @@ function LogIcon({ type }: { type: AdminLogEntry["type"] }) {
 export function ActivityLog({ entries }: { entries: AdminLogEntry[] }) {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns unstable refs by design
   const virtualizer = useVirtualizer({
     count: entries.length,
     getScrollElement: () => parentRef.current,

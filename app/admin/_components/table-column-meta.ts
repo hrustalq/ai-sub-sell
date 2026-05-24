@@ -9,7 +9,11 @@ export type AdminTableColumnMeta = {
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData, TValue> extends AdminTableColumnMeta {}
+  interface ColumnMeta<TData, TValue> {
+    align?: AdminTableColumnMeta["align"];
+    width?: AdminTableColumnMeta["width"];
+    numeric?: AdminTableColumnMeta["numeric"];
+  }
 }
 
 export function getColumnWidth(

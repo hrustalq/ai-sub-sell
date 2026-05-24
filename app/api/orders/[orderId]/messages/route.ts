@@ -1,7 +1,7 @@
 import { getOrderAccessContext } from "@/lib/orders/access";
 import { createOrderMessage } from "@/lib/orders/messages";
 import { getOrderMessages } from "@/lib/orders/queries";
-import { getOrderUnreadCount, markOrderMessagesRead } from "@/lib/orders/read-state";
+import { getOrderUnreadCount } from "@/lib/orders/read-state";
 
 export async function GET(
   req: Request,
