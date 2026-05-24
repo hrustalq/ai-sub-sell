@@ -20,9 +20,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Codex Access Plans — High Performance Limits",
+  title: "AI Subs — подписки Codex, Cursor, Claude",
   description:
-    "High-performance limits for coding, automation, and AI dev workflows.",
+    "Подписки на AI-инструменты для разработки: Codex, Cursor, Claude. Скидки за 3, 6 и 12 месяцев.",
 };
 
 export default function RootLayout({

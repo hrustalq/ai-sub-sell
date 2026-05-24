@@ -76,6 +76,30 @@ model Verification {
   @@map("verification")
 }
 
+model Plan {
+  id             String   @id
+  name           String
+  price          Float
+  currency       String   @default("RUB")
+  period         String
+  limits         String
+  tag            String?
+  badge          String?
+  highlight      Boolean  @default(false)
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  provider       String   @default("codex")
+  tier           String   @default("standard")
+  tierLabel      String   @default("Стандарт")
+  durationMonths Int      @default(1)
+  compareAtPrice Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([provider, tier])
+  @@map("plan")
+}
+
 model Order {
   id              String   @id
   userId          String

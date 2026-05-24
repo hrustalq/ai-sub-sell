@@ -1,0 +1,33 @@
+import Link from "next/link";
+import { getNavbarState } from "@/lib/navbar";
+import { UserNavMenu } from "@/components/layout/user-nav-menu";
+import { Button } from "@/components/ui/button";
+
+export async function SiteNavbar() {
+  const state = await getNavbarState();
+
+  return (
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        <Link href="/" className="font-bold tracking-tight text-foreground">
+          AI<span className="text-primary">.</span>Subs
+        </Link>
+
+        <div className="flex items-center gap-2">
+          {state.status === "guest" ? (
+            <>
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/sign-in">Войти</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/sign-up">Регистрация</Link>
+              </Button>
+            </>
+          ) : (
+            <UserNavMenu user={state.user} isAdmin={state.isAdmin} />
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}

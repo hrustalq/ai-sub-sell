@@ -1,0 +1,28 @@
+import { redirect, notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { getPlan, getPlans } from "@/lib/plans";
+import { CheckoutExperience } from "./checkout-experience";
+
+export default async function CheckoutPage({
+  params,
+}: {
+  params: Promise<{ planId: string }>;
+}) {
+  const { planId } = await params;
+  const [plan, catalogPlans] = await Promise.all([getPlan(planId), getPlans()]);
+  if (!plan) notFound();
+
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) {
+    redirect(`/sign-in?callbackUrl=/checkout/${planId}`);
+  }
+
+  return (
+    <CheckoutExperience
+      initialPlan={plan}
+      catalogPlans={catalogPlans}
+      userEmail={session.user.email}
+    />
+  );
+}

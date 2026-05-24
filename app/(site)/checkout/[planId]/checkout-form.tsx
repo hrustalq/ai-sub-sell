@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import type { Plan } from "@/lib/plans";
 
-export function CheckoutForm({ plan }: { plan: Plan }) {
+type CheckoutFormProps = {
+  planId: string;
+  priceLabel: string;
+};
+
+export function CheckoutForm({ planId, priceLabel }: CheckoutFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +20,7 @@ export function CheckoutForm({ plan }: { plan: Plan }) {
       const res = await fetch("/api/checkout/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.id }),
+        body: JSON.stringify({ planId }),
       });
 
       if (!res.ok) {
@@ -41,7 +45,7 @@ export function CheckoutForm({ plan }: { plan: Plan }) {
       )}
       <Button size="lg" className="w-full gap-2" onClick={handlePay} disabled={loading}>
         {loading && <Spinner />}
-        {loading ? "Создаём платёж…" : "Оплатить через YooKassa"}
+        {loading ? "Создаём платёж…" : `Оплатить ${priceLabel}`}
       </Button>
     </div>
   );

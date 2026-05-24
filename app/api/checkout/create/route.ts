@@ -17,9 +17,9 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const plan = getPlan(planId);
+  const plan = await getPlan(planId);
   if (!plan) {
-    return Response.json({ error: "Invalid plan" }, { status: 400 });
+    return Response.json({ error: "Тариф не найден или недоступен" }, { status: 400 });
   }
 
   const orderId = crypto.randomUUID();
