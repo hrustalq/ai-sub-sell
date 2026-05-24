@@ -8,6 +8,8 @@ import {
   Text,
 } from "@react-email/components";
 
+import { SITE_NAME } from "@/lib/brand";
+
 export const emailStyles = {
   main: {
     backgroundColor: "#f6f6f6",
@@ -75,7 +77,7 @@ export function BaseEmail({ preview, children }: BaseEmailProps) {
                 margin: 0,
               }}
             >
-              AI Sub Sell
+              {SITE_NAME}
             </Text>
           </Section>
 
@@ -87,7 +89,7 @@ export function BaseEmail({ preview, children }: BaseEmailProps) {
               отвечайте на него.
             </Text>
             <Text style={{ ...emailStyles.footer, margin: "4px 0 0" }}>
-              © {new Date().getFullYear()} AI Sub Sell. Все права защищены.
+              © {new Date().getFullYear()} {SITE_NAME}. Все права защищены.
             </Text>
           </Section>
         </Container>

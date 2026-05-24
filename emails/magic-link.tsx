@@ -1,5 +1,6 @@
 import { Button, Hr, Text } from "@react-email/components";
 
+import { SITE_NAME } from "@/lib/brand";
 import { BaseEmail, emailStyles } from "./_base";
 
 interface MagicLinkEmailProps {
@@ -8,7 +9,7 @@ interface MagicLinkEmailProps {
 
 export function MagicLinkEmail({ signInUrl }: MagicLinkEmailProps) {
   return (
-    <BaseEmail preview="Вход в AI Sub Sell по ссылке">
+    <BaseEmail preview={`Вход в ${SITE_NAME} по ссылке`}>
       <Text style={emailStyles.paragraph}>Здравствуйте!</Text>
       <Text style={emailStyles.paragraph}>
         Вы запросили вход без пароля. Нажмите кнопку ниже — откроется ваш аккаунт и

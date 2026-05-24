@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { render } from "@react-email/render";
+import { SITE_NAME } from "./brand";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -11,7 +12,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const FROM = `"${process.env.SMTP_FROM_NAME ?? "AI Sub Sell"}" <${process.env.SMTP_FROM_EMAIL}>`;
+const FROM = `"${process.env.SMTP_FROM_NAME ?? SITE_NAME}" <${process.env.SMTP_FROM_EMAIL}>`;
 
 export async function sendEmail({
   to,

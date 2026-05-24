@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
 export const metadata: Metadata = {
-  title: "Восстановление пароля — AI Sub Sell",
+  title: "Восстановление пароля",
   description: "Введите email для получения ссылки на сброс пароля",
 };
 

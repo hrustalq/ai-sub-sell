@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { pageTitle } from "@/lib/brand";
 import { useUnreadSummary } from "@/lib/orders/hooks";
 
 export function SupportNotificationsProvider({
@@ -13,7 +14,7 @@ export function SupportNotificationsProvider({
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const base = "Поддержка";
+    const base = pageTitle("Поддержка");
     document.title = totalUnread > 0 ? `(${totalUnread}) ${base}` : base;
   }, [totalUnread]);
 

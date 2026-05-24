@@ -1,5 +1,6 @@
 import { Button, Hr, Text } from "@react-email/components";
 
+import { SITE_NAME } from "@/lib/brand";
 import { BaseEmail, emailStyles } from "./_base";
 
 interface ResetPasswordEmailProps {
@@ -12,7 +13,7 @@ export function ResetPasswordEmail({
   resetUrl,
 }: ResetPasswordEmailProps) {
   return (
-    <BaseEmail preview="Сброс пароля для вашего аккаунта AI Sub Sell">
+    <BaseEmail preview={`Сброс пароля для вашего аккаунта ${SITE_NAME}`}>
       <Text style={emailStyles.paragraph}>
         Привет, <strong>{userName}</strong>!
       </Text>

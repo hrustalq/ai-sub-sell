@@ -4,7 +4,7 @@ import { socialProvidersEnabled } from "@/lib/auth-providers";
 import { SignInForm } from "./sign-in-form";
 
 export const metadata: Metadata = {
-  title: "Вход — AI Sub Sell",
+  title: "Вход",
   description: "Войдите в свой аккаунт, чтобы продолжить",
 };
 

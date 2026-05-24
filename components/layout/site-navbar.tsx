@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 import { getNavbarState } from "@/lib/navbar";
 import { UserNavMenu } from "@/components/layout/user-nav-menu";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ export async function SiteNavbar() {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link href="/" className="font-bold tracking-tight text-foreground">
-          AI<span className="text-primary">.</span>Subs
+          <BrandLogo />
         </Link>
 
         <div className="flex items-center gap-2">

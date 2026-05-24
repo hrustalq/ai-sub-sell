@@ -30,7 +30,7 @@ require_min_version() {
   fi
 }
 
-echo "=== AI Sub Sell — dependency check ==="
+echo "=== NeuroPort — dependency check ==="
 
 require_cmd git
 require_cmd curl

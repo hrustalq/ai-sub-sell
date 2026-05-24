@@ -1,5 +1,5 @@
 [Unit]
-Description=AI Sub Sell (Next.js production)
+Description=NeuroPort (Next.js production)
 After=network.target
 
 [Service]

@@ -9,6 +9,7 @@ import { MagicLinkEmail } from "../emails/magic-link";
 import { ResetPasswordEmail } from "../emails/reset-password";
 import { linkOrdersToUserByEmail } from "./users/placeholder";
 import { socialProvidersEnabled } from "./auth-providers";
+import { pageTitle, SITE_NAME } from "./brand";
 
 export { socialProvidersEnabled };
 
@@ -54,7 +55,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Сброс пароля — AI Sub Sell",
+        subject: pageTitle("Сброс пароля"),
         template: createElement(ResetPasswordEmail, {
           userName: user.name,
           resetUrl: url,
@@ -86,7 +87,7 @@ export const auth = betterAuth({
       sendMagicLink: async ({ email, url }) => {
         await sendEmail({
           to: email,
-          subject: "Вход в AI Sub Sell",
+          subject: `Вход в ${SITE_NAME}`,
           template: createElement(MagicLinkEmail, { signInUrl: url }),
         });
       },

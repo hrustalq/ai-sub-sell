@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SITE_NAME } from "@/lib/brand";
 import {
   ZapIcon,
   LayersIcon,
@@ -229,7 +230,7 @@ export default async function Home() {
 
       <footer className="border-t border-border bg-background px-4 py-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-1 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} AI Subs</span>
+          <span>© {new Date().getFullYear()} {SITE_NAME}</span>
           <span>Оплата через YooKassa — безопасно и надёжно</span>
         </div>
       </footer>
