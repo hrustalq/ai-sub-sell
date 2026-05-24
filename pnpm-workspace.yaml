@@ -1,9 +1,9 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
-
-onlyBuiltDependencies:
-  - '@prisma/engines'
-  - better-sqlite3
-  - msw
-  - prisma
+# pnpm v11+: use allowBuilds (onlyBuiltDependencies was removed in v11).
+# https://pnpm.io/settings#allowbuilds
+allowBuilds:
+  "@prisma/engines": true
+  better-sqlite3: true
+  msw: true
+  prisma: true
+  sharp: false
+  unrs-resolver: false

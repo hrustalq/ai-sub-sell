@@ -55,7 +55,18 @@ NEXT_PUBLIC_BETTER_AUTH_URL="https://ai-sub.store"
 First deploy as the deploy user:
 
 ```bash
+sudo -u ai-sub-sell corepack enable
+sudo -u ai-sub-sell corepack prepare pnpm@latest --activate
 sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/deploy.sh
+```
+
+If `pnpm install` reports `ERR_PNPM_IGNORED_BUILDS`, pull latest (uses `allowBuilds` in `pnpm-workspace.yaml`), then:
+
+```bash
+cd /opt/ai-sub-sell/app
+sudo -u ai-sub-sell rm -rf node_modules
+sudo -u ai-sub-sell pnpm install --frozen-lockfile
+sudo -u ai-sub-sell bash deploy/deploy.sh
 ```
 
 ## 3. SSL renewal (cron)

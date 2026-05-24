@@ -72,7 +72,16 @@ git pull --ff-only origin "$GIT_REF"
 
 # Never delete or replace the data directory; only schema migrations touch the DB file.
 echo "Installing dependencies..."
-pnpm install --frozen-lockfile
+if ! pnpm install --frozen-lockfile; then
+  echo "pnpm install failed — clearing modules cache and retrying once..."
+  rm -rf node_modules node_modules/.modules.yaml
+  pnpm install --frozen-lockfile
+fi
+
+if ! node -e "require('better-sqlite3')"; then
+  echo "better-sqlite3 native module missing; rebuilding allowed packages..."
+  pnpm rebuild better-sqlite3 prisma @prisma/engines
+fi
 
 echo "Generating Prisma client..."
 pnpm exec prisma generate
