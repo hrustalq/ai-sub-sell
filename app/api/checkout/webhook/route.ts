@@ -87,6 +87,11 @@ export async function POST(req: Request) {
       } catch (err) {
         console.error("[webhook] paid email failed", orderId, err);
       }
+
+      const { notifyBuyerOrderPaid } = await import("@/lib/telegram/notify");
+      await notifyBuyerOrderPaid(orderId).catch((err) =>
+        console.error("[webhook] telegram notify failed", orderId, err),
+      );
     }
   } else if (event.event === "payment.canceled") {
     await db.order

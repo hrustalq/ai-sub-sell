@@ -1,14 +1,7 @@
-import db from "@/lib/db";
 import { getOrderAccessContext } from "@/lib/orders/access";
-import {
-  cancelMessageEmailReminders,
-  scheduleMessageEmailReminders,
-} from "@/lib/orders/message-reminders";
+import { createOrderMessage } from "@/lib/orders/messages";
 import { getOrderMessages } from "@/lib/orders/queries";
-import {
-  getOrderUnreadCount,
-  markOrderMessagesRead,
-} from "@/lib/orders/read-state";
+import { getOrderUnreadCount, markOrderMessagesRead } from "@/lib/orders/read-state";
 
 export async function GET(
   req: Request,
@@ -55,51 +48,20 @@ export async function POST(
     return Response.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const trimmed = body?.trim();
-  if (!trimmed || trimmed.length > 4000) {
-    return Response.json({ error: "Сообщение должно быть от 1 до 4000 символов" }, { status: 400 });
-  }
-
-  const order = await db.order.findUnique({
-    where: { id: orderId },
-    select: { buyerEmail: true, planName: true },
-  });
-  if (!order) {
-    return Response.json({ error: "Заказ не найден" }, { status: 404 });
-  }
-
-  const message = await db.orderMessage.create({
-    data: {
-      id: crypto.randomUUID(),
-      orderId,
-      author: access.authorRole,
-      body: trimmed,
-    },
-    select: {
-      id: true,
-      author: true,
-      body: true,
-      createdAt: true,
-    },
-  });
-
-  const recipientViewer = access.authorRole === "seller" ? "buyer" : "seller";
-
-  await markOrderMessagesRead(orderId, access.authorRole);
-  await cancelMessageEmailReminders(orderId, access.authorRole);
-
-  await scheduleMessageEmailReminders({
+  const result = await createOrderMessage({
     orderId,
-    messageId: message.id,
-    messageAuthor: access.authorRole,
-    buyerEmail: order.buyerEmail,
-    planName: order.planName,
-  }).catch((err) => console.error("[messages] schedule reminder failed", err));
+    author: access.authorRole,
+    body: body ?? "",
+  });
+
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: 400 });
+  }
 
   return Response.json({
     message: {
-      ...message,
-      createdAt: message.createdAt.toISOString(),
+      ...result.message,
+      createdAt: result.message.createdAt.toISOString(),
     },
     unreadCount: 0,
   });

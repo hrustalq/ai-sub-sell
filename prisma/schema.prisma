@@ -100,31 +100,58 @@ model Plan {
   @@map("plan")
 }
 
+model TelegramAccount {
+  telegramUserId String   @id
+  chatId         String
+  username       String?
+  firstName      String?
+  lastName       String?
+  email          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  orders         Order[]
+
+  @@map("telegram_account")
+}
+
+model TelegramSession {
+  telegramUserId String
+  bot            String
+  state          String   @default("{}")
+  updatedAt      DateTime @updatedAt
+
+  @@id([telegramUserId, bot])
+  @@map("telegram_session")
+}
+
 model Order {
-  id              String         @id
-  userId          String?
-  buyerEmail      String
-  accessTokenHash String
-  planId          String
-  planName        String
-  amount          Float
-  currency        String         @default("RUB")
-  status          String         @default("PENDING")
-  productContent  String?
-  yookassaId      String?
-  confirmationUrl String?
-  receiptEmailSentAt DateTime?
-  paidEmailSentAt    DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  messages        OrderMessage[]
-  messageReads    OrderMessageRead[]
+  id                   String         @id
+  userId               String?
+  buyerEmail           String
+  buyerTelegramUserId  String?
+  accessTokenHash      String
+  planId               String
+  planName             String
+  amount               Float
+  currency             String         @default("RUB")
+  status               String         @default("PENDING")
+  productContent       String?
+  yookassaId           String?
+  confirmationUrl      String?
+  receiptEmailSentAt   DateTime?
+  paidEmailSentAt      DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  user                 User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  buyerTelegram        TelegramAccount? @relation(fields: [buyerTelegramUserId], references: [telegramUserId], onDelete: SetNull)
+  messages             OrderMessage[]
+  messageReads         OrderMessageRead[]
   messageEmailReminders OrderMessageEmailReminder[]
 
   @@index([userId])
   @@index([yookassaId])
   @@index([buyerEmail])
+  @@index([buyerTelegramUserId])
   @@map("order")
 }
 

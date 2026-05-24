@@ -1,5 +1,6 @@
-import db from "@/lib/db";
 import { getOrderAccessContext } from "@/lib/orders/access";
+import { updateOrderFulfillment } from "@/lib/orders/fulfillment";
+import db from "@/lib/db";
 
 export async function PATCH(
   req: Request,
@@ -20,17 +21,13 @@ export async function PATCH(
     return Response.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const trimmed = productContent?.trim();
-  if (!trimmed || trimmed.length > 20000) {
-    return Response.json(
-      { error: "Данные товара должны быть от 1 до 20000 символов" },
-      { status: 400 },
-    );
+  const result = await updateOrderFulfillment(orderId, productContent ?? "");
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: 400 });
   }
 
-  const order = await db.order.update({
+  const order = await db.order.findUnique({
     where: { id: orderId },
-    data: { productContent: trimmed },
     select: {
       id: true,
       productContent: true,
@@ -40,8 +37,8 @@ export async function PATCH(
 
   return Response.json({
     order: {
-      ...order,
-      updatedAt: order.updatedAt.toISOString(),
+      ...order!,
+      updatedAt: order!.updatedAt.toISOString(),
     },
   });
 }
