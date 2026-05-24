@@ -60,7 +60,7 @@ sudo -u ai-sub-sell corepack prepare pnpm@latest --activate
 sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/deploy.sh
 ```
 
-If `pnpm install` reports `ERR_PNPM_IGNORED_BUILDS`, pull latest (uses `allowBuilds` in `pnpm-workspace.yaml`), then:
+If `pnpm install` reports `ERR_PNPM_IGNORED_BUILDS` (e.g. `esbuild`), pull latest (`allowBuilds` in `pnpm-workspace.yaml` must list that package), then:
 
 ```bash
 cd /opt/ai-sub-sell/app
