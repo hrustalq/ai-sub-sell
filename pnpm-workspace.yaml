@@ -1,5 +1,6 @@
-# pnpm v11+: use allowBuilds (onlyBuiltDependencies was removed in v11).
-# https://pnpm.io/settings#allowbuilds
+packages:
+  - '.'
+
 allowBuilds:
   "@prisma/engines": true
   better-sqlite3: true
