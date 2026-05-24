@@ -56,7 +56,7 @@ fi
 # nginx
 NGINX_SITE="/etc/nginx/sites-available/ai-sub-sell"
 sed "s/__DOMAIN__/$DOMAIN/g" "$SCRIPT_DIR/nginx/ai-sub-sell.conf" >"$NGINX_SITE"
-ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/ai-sub-sell"
+ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/ai-sub-sell
 rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 nginx -t
 systemctl enable nginx
@@ -65,7 +65,7 @@ systemctl reload nginx
 # Initial certificate
 if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
   if [[ -z "${CERTBOT_EMAIL:-}" ]]; then
-    echo "Set CERTBOT_EMAIL=you@example.com for Let's Encrypt, then re-run."
+    echo "Set CERTBOT_EMAIL=you@example.com for Lets Encrypt, then re-run."
     exit 1
   fi
   certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$CERTBOT_EMAIL" || {
