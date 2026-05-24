@@ -15,7 +15,7 @@ export default async function AdminPaymentsPage() {
     <AdminPageShell
       fill
       title="Платежи"
-      description="Заказы и статусы оплаты через YooKassa"
+      description="Заказы и статусы оплаты"
     >
       <PaymentsTable data={data} />
     </AdminPageShell>

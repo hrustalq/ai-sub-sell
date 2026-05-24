@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/json-ld";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/brand";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/brand";
 import { buildHomeJsonLd } from "@/lib/seo-structured-data";
 import {
   ZapIcon,
@@ -35,7 +35,7 @@ const features = [
   {
     icon: ZapIcon,
     title: "Мгновенная активация",
-    desc: "Доступ сразу после оплаты через YooKassa",
+    desc: "Доступ сразу после подтверждения оплаты",
   },
 ];
 
@@ -53,7 +53,7 @@ const steps = [
   {
     num: "03",
     title: "Оплата",
-    desc: "Карты, СБП и кошельки через YooKassa",
+    desc: "Карты, СБП и другие способы оплаты",
   },
   {
     num: "04",
@@ -151,7 +151,7 @@ export default async function Home() {
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheckIcon className="size-4 text-primary" />
-            Безопасная оплата через YooKassa
+            Защищённая оплата
           </div>
         </div>
       </section>
@@ -248,12 +248,6 @@ export default async function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-border bg-background px-4 py-6">
-        <div className="mx-auto flex max-w-5xl flex-col gap-1 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} {SITE_NAME}</span>
-          <span>Оплата через YooKassa — безопасно и надёжно</span>
-        </div>
-      </footer>
     </div>
     </>
   );

@@ -337,7 +337,7 @@ export function CheckoutExperience({
               />
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheckIcon className="size-4 text-primary" />
-                Безопасная оплата через YooKassa
+                Защищённая оплата
               </div>
             </CardFooter>
           </Card>
