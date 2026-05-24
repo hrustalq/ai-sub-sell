@@ -93,9 +93,9 @@ export function SupportOrderView({
   if (!order) return null;
 
   return (
-    <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
+    <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-2 lg:items-stretch">
+      <Card className="flex min-h-0 flex-col overflow-visible lg:max-h-full">
+        <CardHeader className="shrink-0">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
               <CardTitle className="flex flex-wrap items-center gap-2 text-lg">
@@ -119,7 +119,7 @@ export function SupportOrderView({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
           {order.status === "PAID" && order.productContent ? (
             <pre className="whitespace-pre-wrap rounded-lg border bg-muted/50 p-4 font-mono text-sm leading-relaxed">
               {order.productContent}
@@ -162,7 +162,7 @@ export function SupportOrderView({
         initialMessages={initialMessages}
         initialUnreadCount={initialUnreadCount}
         orderLabel={order.planName}
-        className="min-h-[480px]"
+        className="min-h-0 lg:min-h-[calc(100dvh-8rem)]"
       />
     </div>
   );

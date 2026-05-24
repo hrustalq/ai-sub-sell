@@ -37,17 +37,23 @@ export async function getOrderAccessContext(
 ): Promise<OrderAccessContext | null> {
   const order = await db.order.findUnique({
     where: { id: orderId },
-    select: { id: true, userId: true, accessTokenHash: true },
+    select: { id: true, userId: true, buyerEmail: true, accessTokenHash: true },
   });
   if (!order) return null;
 
   const session = await auth.api.getSession({ headers: await headers() });
   const sessionUserId = session?.user?.id ?? null;
-  const sessionEmail = session?.user?.email ?? null;
+  const sessionEmail = session?.user?.email?.trim().toLowerCase() ?? null;
   const isStaff = isSupportEmail(sessionEmail);
 
   const hasValidToken = Boolean(token && tokensMatch(order.accessTokenHash, token));
-  const isOwner = Boolean(sessionUserId && order.userId && order.userId === sessionUserId);
+  const isOwnerByUserId = Boolean(
+    sessionUserId && order.userId && order.userId === sessionUserId,
+  );
+  const isOwnerByEmail = Boolean(
+    sessionEmail && order.buyerEmail.trim().toLowerCase() === sessionEmail,
+  );
+  const isOwner = isOwnerByUserId || isOwnerByEmail;
 
   if (!hasValidToken && !isOwner && !isStaff) {
     return null;

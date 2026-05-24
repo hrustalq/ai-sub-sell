@@ -28,6 +28,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 type OrderExperienceProps = {
   initialOrder: OrderRecord;
@@ -110,8 +111,14 @@ export function OrderExperience({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:py-10">
-      <div className="flex flex-col gap-2">
+    <main
+      className={cn(
+        "mx-auto flex w-full max-w-6xl flex-1 flex-col gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5",
+        "max-h-[calc(100dvh-3.5rem)] min-h-0 overflow-y-auto",
+        "lg:h-full lg:min-h-0",
+      )}
+    >
+      <div className="shrink-0 flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">Заказ</p>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight">
@@ -128,7 +135,7 @@ export function OrderExperience({
       </div>
 
       {accessToken && (
-        <Alert>
+        <Alert className="shrink-0">
           <AlertTriangleIcon className="size-4" />
           <AlertTitle>Сохраните ссылку на заказ</AlertTitle>
           <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -149,9 +156,9 @@ export function OrderExperience({
         </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
+      <div className="grid min-h-0 flex-1 gap-4 sm:gap-6 lg:grid-cols-2 lg:items-stretch">
+        <Card className="flex min-h-0 flex-col overflow-visible lg:max-h-full">
+          <CardHeader className="shrink-0">
             <CardTitle className="flex items-center gap-2 text-lg">
               <PackageIcon className="size-5" />
               Купленный товар
@@ -160,7 +167,7 @@ export function OrderExperience({
               {order.buyerEmail} · {formatPrice(order.amount, order.currency)}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             {order.status === "PENDING" && (
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
                 <p className="font-medium text-amber-900 dark:text-amber-100">
@@ -237,11 +244,13 @@ export function OrderExperience({
           initialMessages={initialMessages}
           initialUnreadCount={initialUnreadCount}
           orderLabel={order.planName}
-          className="min-h-[420px]"
+          className="min-h-0 lg:h-full lg:max-h-full"
         />
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="shrink-0 text-sm text-destructive">{error}</p>
+      )}
     </main>
   );
 }

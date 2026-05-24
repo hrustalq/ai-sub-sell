@@ -13,6 +13,28 @@ export const SEED_ORDER_IDS = {
 
 export const SEED_GUEST_ACCESS_TOKEN = "seed-guest-order-token-dev-only";
 
+/** Dev-only magic-link tokens (also work without login). */
+export const SEED_ORDER_ACCESS_TOKENS: Record<
+  (typeof SEED_ORDER_IDS)[keyof typeof SEED_ORDER_IDS],
+  string
+> = {
+  [SEED_ORDER_IDS.needsReply]: "seed-token-needs-reply",
+  [SEED_ORDER_IDS.unreadBuyer]: "seed-token-unread-buyer",
+  [SEED_ORDER_IDS.allRead]: "seed-token-all-read",
+  [SEED_ORDER_IDS.pending]: "seed-token-pending",
+  [SEED_ORDER_IDS.canceled]: "seed-token-canceled",
+  [SEED_ORDER_IDS.guest]: SEED_GUEST_ACCESS_TOKEN,
+};
+
+export function seedOrderUrl(
+  baseUrl: string,
+  orderId: string,
+  token?: string,
+): string {
+  const path = `/orders/${orderId}`;
+  return token ? `${baseUrl}${path}?token=${encodeURIComponent(token)}` : `${baseUrl}${path}`;
+}
+
 export const DEFAULT_BUYER_EMAIL = "buyer@example.com";
 export const DEFAULT_BUYER_PASSWORD = "buyer12345";
 export const DEFAULT_BUYER_NAME = "Тестовый покупатель";
@@ -133,7 +155,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
         id: SEED_ORDER_IDS.needsReply,
         userId: buyerId,
         buyerEmail,
-        accessTokenHash: hashAccessToken("seed-token-needs-reply"),
+        accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.needsReply]),
         planId: plan.id,
         planName: plan.name,
         amount: plan.price,
@@ -147,7 +169,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
         id: SEED_ORDER_IDS.unreadBuyer,
         userId: buyerId,
         buyerEmail,
-        accessTokenHash: hashAccessToken("seed-token-unread-buyer"),
+        accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.unreadBuyer]),
         planId: plan.id,
         planName: plan.name,
         amount: plan.price,
@@ -161,7 +183,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
         id: SEED_ORDER_IDS.allRead,
         userId: buyerId,
         buyerEmail,
-        accessTokenHash: hashAccessToken("seed-token-all-read"),
+        accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.allRead]),
         planId: plan.id,
         planName: plan.name,
         amount: plan.price,
@@ -175,7 +197,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
         id: SEED_ORDER_IDS.pending,
         userId: buyerId,
         buyerEmail,
-        accessTokenHash: hashAccessToken("seed-token-pending"),
+        accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.pending]),
         planId: plan.id,
         planName: plan.name,
         amount: plan.price,
@@ -189,7 +211,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
         id: SEED_ORDER_IDS.canceled,
         userId: buyerId,
         buyerEmail,
-        accessTokenHash: hashAccessToken("seed-token-canceled"),
+        accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.canceled]),
         planId: plan.id,
         planName: plan.name,
         amount: plan.price,
@@ -312,9 +334,12 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
   });
 
   console.log("Демо-заказы созданы:");
-  console.log(`  Покупатель: ${buyerEmail} / ${getBuyerSeedConfig().password}`);
-  console.log(`  Поддержка — нужен ответ: ${baseUrl}/support/${SEED_ORDER_IDS.needsReply}`);
-  console.log(`  Покупатель — непрочитано: ${baseUrl}/orders/${SEED_ORDER_IDS.unreadBuyer}`);
-  console.log(`  Гостевой заказ: ${baseUrl}/orders/${SEED_ORDER_IDS.guest}?token=${SEED_GUEST_ACCESS_TOKEN}`);
-  console.log(`  Список поддержки: ${baseUrl}/support`);
+  console.log(`  Покупатель (войти): ${buyerEmail} / ${getBuyerSeedConfig().password}`);
+  console.log(`  Поддержка: ${baseUrl}/support`);
+  console.log(`  Нужен ответ: ${baseUrl}/support/${SEED_ORDER_IDS.needsReply}`);
+  console.log("  Ссылки с токеном (без входа):");
+  for (const orderId of Object.values(SEED_ORDER_IDS)) {
+    const token = SEED_ORDER_ACCESS_TOKENS[orderId];
+    console.log(`    ${orderId}: ${seedOrderUrl(baseUrl, orderId, token)}`);
+  }
 }
