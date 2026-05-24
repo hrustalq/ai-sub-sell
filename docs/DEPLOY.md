@@ -155,11 +155,19 @@ cd /opt/ai-sub-sell/app && sudo -u ai-sub-sell git fetch origin main
 
 ## 5. Manual deploy
 
+Run git and deploy as the deploy user, not root (avoids `dubious ownership`):
+
 ```bash
-cd /opt/ai-sub-sell/app
-git pull
-bash deploy/deploy.sh
+sudo -u ai-sub-sell bash -c 'cd /opt/ai-sub-sell/app && git pull && bash deploy/deploy.sh'
 ```
+
+If you must run `git` as root once:
+
+```bash
+git config --global --add safe.directory /opt/ai-sub-sell/app
+```
+
+Prefer `sudo -u ai-sub-sell` for all app commands.
 
 Deploy will:
 

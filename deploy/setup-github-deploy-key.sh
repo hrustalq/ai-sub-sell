@@ -40,6 +40,11 @@ fi
 chmod 600 "$SSH_CONFIG"
 chown "$DEPLOY_USER:$DEPLOY_USER" "$SSH_CONFIG"
 
+APP_DIR="${APP_DIR:-/opt/ai-sub-sell/app}"
+if [[ -d "$APP_DIR/.git" ]]; then
+  sudo -u "$DEPLOY_USER" git config --global --add safe.directory "$APP_DIR"
+fi
+
 echo ""
 echo "=== GitHub deploy key (read-only) ==="
 echo "1. Open your repo on GitHub → Settings → Deploy keys → Add deploy key"
