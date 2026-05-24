@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_NAME } from "@/lib/brand";
+import { JsonLd } from "@/components/seo/json-ld";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/brand";
+import { buildHomeJsonLd } from "@/lib/seo-structured-data";
 import {
   ZapIcon,
   LayersIcon,
@@ -99,13 +102,30 @@ const resources = [
 
 const providerNames = PROVIDERS.map((p) => p.label).join(", ");
 
+export const metadata: Metadata = {
+  title: {
+    absolute: SITE_TITLE,
+  },
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
+  },
+};
+
 export default async function Home() {
   const navbar = await getNavbarState();
   await seedPlansIfEmpty();
   const plans = await getPlans();
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <JsonLd data={buildHomeJsonLd()} />
+      <div className="min-h-screen bg-background">
       <section className="bg-muted px-4 py-24 text-center">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-6">
           <Badge variant="secondary" className="px-4 py-1 text-xs uppercase tracking-widest">
@@ -235,5 +255,6 @@ export default async function Home() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
+
 import { requireAuth } from "@/lib/auth-session";
+import { noIndexMetadata } from "@/lib/seo";
 import { USER_NAV_ITEMS } from "@/lib/user/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+
+export const metadata: Metadata = noIndexMetadata();
 
 export default async function UserLayout({
   children,
