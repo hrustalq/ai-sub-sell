@@ -33,8 +33,8 @@ export function BrandImage({ width, height, compact = false }: BrandImageProps) 
           lineHeight: 1,
         }}
       >
-        <span>Neuro</span>
-        <span style={{ color: "#a3a3a3" }}>Port</span>
+        <span>ai-</span>
+        <span style={{ color: "#a3a3a3" }}>sub</span>
       </div>
       {!compact ? (
         <p

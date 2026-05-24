@@ -39,15 +39,15 @@ On the VPS as root:
 export CERTBOT_EMAIL=you@example.com
 export REPO_URL=git@github.com:YOUR_ORG/ai-sub-sell.git   # optional; or clone manually
 
-sudo bash deploy/setup-server.sh shop.example.com
+sudo bash deploy/setup-server.sh ai-sub.store
 ```
 
 Then edit `/opt/ai-sub-sell/shared/.env` (see `deploy/env.production.example`). Ensure:
 
 ```env
 DATABASE_URL="file:/var/lib/ai-sub-sell/data/production.db"
-BETTER_AUTH_URL="https://shop.example.com"
-NEXT_PUBLIC_BETTER_AUTH_URL="https://shop.example.com"
+BETTER_AUTH_URL="https://ai-sub.store"
+NEXT_PUBLIC_BETTER_AUTH_URL="https://ai-sub.store"
 ```
 
 First deploy as the deploy user:
@@ -128,4 +128,4 @@ sudo nginx -t && sudo systemctl status nginx
 ./deploy/check-deps.sh
 ```
 
-OAuth redirect URIs must use your production `BETTER_AUTH_URL` (e.g. `https://shop.example.com/api/auth/callback/google`).
+OAuth redirect URIs must use your production `BETTER_AUTH_URL` (e.g. `https://ai-sub.store/api/auth/callback/google`).

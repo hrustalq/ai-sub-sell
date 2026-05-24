@@ -1,7 +1,7 @@
 export function BrandLogo({ className }: { className?: string }) {
   return (
     <span className={className}>
-      Neuro<span className="text-primary">Port</span>
+      ai-<span className="text-primary">sub</span>
     </span>
   );
 }

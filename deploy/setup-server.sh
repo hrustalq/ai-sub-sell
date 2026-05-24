@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ -z "$DOMAIN" ]]; then
   echo "Usage: sudo $0 <domain> [deploy-user]"
-  echo "Example: sudo $0 shop.example.com"
+  echo "Example: sudo $0 ai-sub.store"
   exit 1
 fi
 
@@ -38,7 +38,7 @@ chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_ROOT" "$DATA_DIR"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   cp "$SCRIPT_DIR/env.production.example" "$ENV_FILE"
-  sed -i "s|your-domain.example|$DOMAIN|g" "$ENV_FILE"
+  sed -i "s|ai-sub.store|$DOMAIN|g" "$ENV_FILE"
   chown "$DEPLOY_USER:$DEPLOY_USER" "$ENV_FILE"
   chmod 600 "$ENV_FILE"
   echo "Created $ENV_FILE — edit secrets before going live."

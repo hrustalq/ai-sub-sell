@@ -1,4 +1,6 @@
-export const SITE_NAME = "NeuroPort";
+export const SITE_NAME = "ai-sub";
+
+export const SITE_DOMAIN = "ai-sub.store";
 
 export const SITE_TITLE = `${SITE_NAME} — подписки Codex, Cursor, Claude`;
 

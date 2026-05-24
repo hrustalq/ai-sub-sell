@@ -6,7 +6,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const SITE_LOCALE = "ru_RU";
 
 export const SITE_KEYWORDS = [
-  "NeuroPort",
+  process.env.SITE_NAME ?? "",
   "подписка Codex",
   "подписка Cursor",
   "подписка Claude",
