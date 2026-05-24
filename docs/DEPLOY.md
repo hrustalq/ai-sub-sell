@@ -41,7 +41,7 @@ sudo CERTBOT_EMAIL=you@example.com bash deploy/setup-server.sh ai-sub.store
 # or:
 sudo bash deploy/setup-server.sh ai-sub.store ai-sub-sell you@example.com
 
-export REPO_URL=git@github.com:YOUR_ORG/ai-sub-sell.git   # optional; or clone manually
+export REPO_URL=git@github.com:YOUR_ORG/ai-sub-sell.git   # optional; requires deploy key (see below)
 ```
 
 Then edit `/opt/ai-sub-sell/shared/.env` (see `deploy/env.production.example`). Ensure:
@@ -101,14 +101,57 @@ On push to `main` (and manual `workflow_dispatch`), SSH into the VPS and run `de
 
 Use **GitHub Environment** `production` with required reviewers if you want approval gates.
 
-### Deploy user SSH key
+Because `deploy.yml` sets `environment: production`, secrets can live in either place:
+
+- **Repository secrets** — Settings → Secrets and variables → Actions
+- **Environment secrets** — Settings → Environments → production → Environment secrets
+
+If the same name exists in both, the environment value wins. An empty `VPS_SSH_KEY` in the environment overrides a valid repo secret.
+
+### Two different SSH keys
+
+| Key | Where private key lives | Where public key goes | Purpose |
+|-----|------------------------|------------------------|---------|
+| **Actions → VPS** | GitHub secret `VPS_SSH_KEY` | `/home/ai-sub-sell/.ssh/authorized_keys` | GitHub Actions SSH into the server |
+| **VPS → GitHub** | `/home/ai-sub-sell/.ssh/id_ed25519_github` | Repo → Settings → Deploy keys | `git fetch` / `git pull` on the server |
+
+Do not reuse the Actions key for GitHub pulls — GitHub Actions authenticates *to* the VPS; the VPS must separately authenticate *to* GitHub.
+
+### GitHub Actions SSH key (VPS login)
 
 ```bash
 sudo -u ai-sub-sell ssh-keygen -t ed25519 -f /home/ai-sub-sell/.ssh/id_ed25519 -N ""
-# Add public key to authorized_keys; store private key in VPS_SSH_KEY
+cat /home/ai-sub-sell/.ssh/id_ed25519.pub >> /home/ai-sub-sell/.ssh/authorized_keys
+# Store id_ed25519 (private) in GitHub secret VPS_SSH_KEY
+```
+
+Paste the **entire private key** into `VPS_SSH_KEY`, including the `BEGIN`/`END` lines and real newlines (not literal `\n`). Use the private key file, not the `.pub` file. Keys with a passphrase are not supported unless you also configure `passphrase` on the action.
+
+### GitHub deploy key (git pull on VPS)
+
+If `deploy.sh` fails with `git@github.com: Permission denied (publickey)`, the deploy user cannot pull the repo:
+
+```bash
+sudo bash /opt/ai-sub-sell/app/deploy/setup-github-deploy-key.sh
+```
+
+Copy the printed public key into **GitHub → your repo → Settings → Deploy keys → Add deploy key** (read-only). Then test:
+
+```bash
+sudo -u ai-sub-sell ssh -T git@github.com
+cd /opt/ai-sub-sell/app && sudo -u ai-sub-sell git fetch origin main
 ```
 
 `setup-server.sh` grants passwordless `systemctl restart ai-sub-sell` via `/etc/sudoers.d/ai-sub-sell-deploy`.
+
+### SSH deploy troubleshooting
+
+| Log message | Fix |
+|-------------|-----|
+| `ssh: no key found` | `VPS_SSH_KEY` is missing, empty, or not a valid private key PEM/OpenSSH block |
+| `unable to authenticate` | Public key not in `~/.ssh/authorized_keys` on the VPS, wrong `VPS_USER`, or wrong key pair |
+| `git@github.com: Permission denied` | Add a **deploy key** on the repo; run `deploy/setup-github-deploy-key.sh` on the VPS |
+| Missing secrets preflight | Create `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY` in repo or `production` environment secrets |
 
 ## 5. Manual deploy
 

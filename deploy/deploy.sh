@@ -66,7 +66,12 @@ fi
 cd "$APP_DIR"
 
 echo "Fetching $GIT_REF..."
-git fetch origin "$GIT_REF"
+if ! git fetch origin "$GIT_REF"; then
+  echo "git fetch failed. If the remote is git@github.com:..., configure a GitHub deploy key:"
+  echo "  sudo bash $SCRIPT_DIR/setup-github-deploy-key.sh"
+  echo "See docs/DEPLOY.md → GitHub deploy key."
+  exit 1
+fi
 git checkout "$GIT_REF"
 git pull --ff-only origin "$GIT_REF"
 
