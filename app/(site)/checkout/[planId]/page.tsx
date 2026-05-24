@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getPlan, getPlans } from "@/lib/plans";
@@ -14,15 +14,13 @@ export default async function CheckoutPage({
   if (!plan) notFound();
 
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) {
-    redirect(`/sign-in?callbackUrl=/checkout/${planId}`);
-  }
 
   return (
     <CheckoutExperience
       initialPlan={plan}
       catalogPlans={catalogPlans}
-      userEmail={session.user.email}
+      userEmail={session?.user?.email}
+      isLoggedIn={Boolean(session?.user)}
     />
   );
 }

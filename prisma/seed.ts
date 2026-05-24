@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../generated/prisma/client";
 import { seedAdminUser } from "@/lib/admin/seed";
+import { seedDemoOrders } from "@/lib/orders/seed";
 import { buildDefaultPlans } from "@/lib/plans/catalog";
 import { LEGACY_PLAN_IDS, planToDbRecord } from "@/lib/plans/seed";
 
@@ -27,6 +28,7 @@ async function main() {
   console.log(`Синхронизировано тарифов: ${defaults.length}`);
 
   await seedAdminUser(db);
+  await seedDemoOrders(db);
 }
 
 main()

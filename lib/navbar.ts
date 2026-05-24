@@ -3,6 +3,7 @@ import "server-only";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin/auth";
+import { isSupportEmail } from "@/lib/support/auth";
 import type { NavbarState } from "@/lib/navbar-types";
 
 export type { NavbarState, NavbarUser } from "@/lib/navbar-types";
@@ -35,5 +36,6 @@ export async function getNavbarState(): Promise<NavbarState> {
       initials: getInitials(user.name, user.email),
     },
     isAdmin: isAdminEmail(user.email),
+    isSupport: isSupportEmail(user.email),
   };
 }

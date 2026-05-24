@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { type ColumnDef } from "@tanstack/react-table";
@@ -8,6 +9,7 @@ import "@/app/admin/_components/table-column-meta";
 import type { AdminPaymentRecord } from "@/lib/admin/types";
 import { formatPrice } from "@/lib/plans/client";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { Button } from "@/components/ui/button";
 import { VirtualDataTable } from "@/app/admin/_components/virtual-data-table";
 
 export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
@@ -30,8 +32,10 @@ export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
         meta: { width: "28%", align: "left" },
         cell: ({ row }) => (
           <div className="hidden flex-col gap-0.5 text-sm sm:flex">
-            <span>{row.original.user.name}</span>
-            <span className="text-muted-foreground">{row.original.user.email}</span>
+            <span>{row.original.user?.name ?? "Гость"}</span>
+            <span className="text-muted-foreground">
+              {row.original.user?.email ?? row.original.buyerEmail}
+            </span>
           </div>
         ),
       },
@@ -54,7 +58,7 @@ export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
       {
         accessorKey: "createdAt",
         header: "Дата",
-        meta: { width: "16%", align: "right" },
+        meta: { width: "12%", align: "right" },
         cell: ({ row }) => (
           <div className="text-sm text-muted-foreground">
             <div>{format(new Date(row.original.createdAt), "dd MMM yyyy", { locale: ru })}</div>
@@ -62,6 +66,16 @@ export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
               {format(new Date(row.original.createdAt), "HH:mm", { locale: ru })}
             </div>
           </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "",
+        meta: { width: "12%", align: "right" },
+        cell: ({ row }) => (
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/support/${row.original.id}`}>Открыть</Link>
+          </Button>
         ),
       },
     ],

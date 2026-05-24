@@ -22,13 +22,14 @@ export type AdminPaymentRow = {
   planName: string;
   amount: number;
   currency: string;
+  buyerEmail: string;
   yookassaId: string | null;
   createdAt: Date;
   user: {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
 };
 
 export async function getAdminStats(): Promise<AdminStatsSnapshot> {
@@ -81,6 +82,7 @@ export async function getAdminActivityLog(limit = 20): Promise<AdminLogEntry[]> 
         amount: true,
         currency: true,
         createdAt: true,
+        buyerEmail: true,
         user: { select: { email: true } },
       },
     }),
@@ -117,7 +119,7 @@ export async function getAdminActivityLog(limit = 20): Promise<AdminLogEntry[]> 
       id: `order-${order.id}-${order.status}`,
       type,
       message: `Заказ ${statusLabel.toLowerCase()}: ${order.planName}`,
-      detail: `${order.user.email} · ${order.amount} ${order.currency}`,
+      detail: `${order.user?.email ?? order.buyerEmail} · ${order.amount} ${order.currency}`,
       createdAt: order.createdAt.toISOString(),
     });
   }
@@ -168,6 +170,7 @@ export async function getAdminPayments(): Promise<AdminPaymentRow[]> {
     planName: order.planName,
     amount: order.amount,
     currency: order.currency,
+    buyerEmail: order.buyerEmail,
     yookassaId: order.yookassaId,
     createdAt: order.createdAt,
     user: order.user,

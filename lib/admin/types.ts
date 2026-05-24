@@ -25,13 +25,14 @@ export type AdminPaymentRecord = {
   planName: string;
   amount: number;
   currency: string;
+  buyerEmail: string;
   yookassaId: string | null;
   createdAt: string;
   user: {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
 };
 
 export type AdminPlanRecord = {

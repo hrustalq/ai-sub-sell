@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -5,6 +7,7 @@ import { ExternalLinkIcon } from "lucide-react";
 import type { UserOrderRecord } from "@/lib/user/types";
 import { formatPrice } from "@/lib/plans/client";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -30,6 +33,11 @@ export function UserPaymentsList({ orders }: { orders: UserOrderRecord[] }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-medium text-foreground">{order.planName}</p>
                   <OrderStatusBadge status={order.status} />
+                  {order.unreadCount > 0 && (
+                    <Badge variant="destructive">
+                      {order.unreadCount} новых
+                    </Badge>
+                  )}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{order.id}</p>
                 <time
@@ -45,18 +53,23 @@ export function UserPaymentsList({ orders }: { orders: UserOrderRecord[] }) {
                 <p className="text-lg font-bold tabular-nums text-foreground">
                   {formatPrice(order.amount, order.currency)}
                 </p>
-                {order.status === "PENDING" && order.confirmationUrl && (
-                  <Button asChild size="sm">
-                    <a
-                      href={order.confirmationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Оплатить
-                      <ExternalLinkIcon className="size-3.5" />
-                    </a>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/orders/${order.id}`}>Открыть заказ</Link>
                   </Button>
-                )}
+                  {order.status === "PENDING" && order.confirmationUrl && (
+                    <Button asChild size="sm">
+                      <a
+                        href={order.confirmationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Оплатить
+                        <ExternalLinkIcon className="size-3.5" />
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

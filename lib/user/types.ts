@@ -6,4 +6,5 @@ export type UserOrderRecord = {
   status: string;
   confirmationUrl: string | null;
   createdAt: string;
+  unreadCount: number;
 };

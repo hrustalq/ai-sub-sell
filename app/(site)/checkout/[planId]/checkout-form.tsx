@@ -7,9 +7,10 @@ import { Spinner } from "@/components/ui/spinner";
 type CheckoutFormProps = {
   planId: string;
   priceLabel: string;
+  email?: string;
 };
 
-export function CheckoutForm({ planId, priceLabel }: CheckoutFormProps) {
+export function CheckoutForm({ planId, priceLabel, email }: CheckoutFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +21,7 @@ export function CheckoutForm({ planId, priceLabel }: CheckoutFormProps) {
       const res = await fetch("/api/checkout/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId, email: email?.trim() || undefined }),
       });
 
       if (!res.ok) {
@@ -43,7 +44,12 @@ export function CheckoutForm({ planId, priceLabel }: CheckoutFormProps) {
           {error}
         </p>
       )}
-      <Button size="lg" className="w-full gap-2" onClick={handlePay} disabled={loading}>
+      <Button
+        size="lg"
+        className="w-full gap-2"
+        onClick={handlePay}
+        disabled={loading || (!email?.trim())}
+      >
         {loading && <Spinner />}
         {loading ? "Создаём платёж…" : `Оплатить ${priceLabel}`}
       </Button>

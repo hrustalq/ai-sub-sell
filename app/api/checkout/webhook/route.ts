@@ -12,7 +12,28 @@ export async function POST(req: Request) {
   if (!orderId) return new Response(null, { status: 200 });
 
   if (event.event === "payment.succeeded") {
-    await db.order.update({ where: { id: orderId }, data: { status: "PAID" } }).catch(() => null);
+    const updated = await db.order
+      .update({ where: { id: orderId }, data: { status: "PAID" } })
+      .catch(() => null);
+
+    if (updated) {
+      const existingWelcome = await db.orderMessage.findFirst({
+        where: { orderId, author: "seller" },
+        select: { id: true },
+      });
+      if (!existingWelcome) {
+        await db.orderMessage
+          .create({
+            data: {
+              id: crypto.randomUUID(),
+              orderId,
+              author: "seller",
+              body: "Спасибо за оплату! Мы подготовим данные доступа и разместим их на этой странице. Если есть вопросы — напишите здесь.",
+            },
+          })
+          .catch(() => null);
+      }
+    }
   } else if (event.event === "payment.canceled") {
     await db.order.update({ where: { id: orderId }, data: { status: "CANCELED" } }).catch(() => null);
   }

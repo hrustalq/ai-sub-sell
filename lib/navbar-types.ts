@@ -7,4 +7,4 @@ export type NavbarUser = {
 
 export type NavbarState =
   | { status: "guest" }
-  | { status: "authenticated"; user: NavbarUser; isAdmin: boolean };
+  | { status: "authenticated"; user: NavbarUser; isAdmin: boolean; isSupport: boolean };

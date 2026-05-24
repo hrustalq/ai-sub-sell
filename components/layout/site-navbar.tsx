@@ -24,7 +24,11 @@ export async function SiteNavbar() {
               </Button>
             </>
           ) : (
-            <UserNavMenu user={state.user} isAdmin={state.isAdmin} />
+            <UserNavMenu
+              user={state.user}
+              isAdmin={state.isAdmin}
+              isSupport={state.isSupport}
+            />
           )}
         </div>
       </div>

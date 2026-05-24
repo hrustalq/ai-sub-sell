@@ -5,6 +5,8 @@ import {
   PackageIcon,
   UsersIcon,
   CreditCardIcon,
+  MessageSquareIcon,
+  HeadphonesIcon,
   UserIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -15,6 +17,8 @@ export const NAV_ICONS: Record<NavIconName, LucideIcon> = {
   package: PackageIcon,
   users: UsersIcon,
   "credit-card": CreditCardIcon,
+  "message-square": MessageSquareIcon,
+  headphones: HeadphonesIcon,
   user: UserIcon,
 };
 

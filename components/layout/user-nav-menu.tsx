@@ -8,7 +8,9 @@ import {
   UserIcon,
   TagIcon,
   CreditCardIcon,
+  HeadphonesIcon,
 } from "lucide-react";
+import { useUnreadSummary } from "@/lib/orders/hooks";
 import type { NavbarUser } from "@/lib/navbar-types";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,10 +28,16 @@ import {
 type UserNavMenuProps = {
   user: NavbarUser;
   isAdmin: boolean;
+  isSupport?: boolean;
 };
 
-export function UserNavMenu({ user, isAdmin }: UserNavMenuProps) {
+export function UserNavMenu({ user, isAdmin, isSupport = false }: UserNavMenuProps) {
   const router = useRouter();
+  const { totalUnread: buyerUnread } = useUnreadSummary({ viewer: "buyer" });
+  const { totalUnread: supportUnread } = useUnreadSummary({
+    viewer: "seller",
+    enabled: isSupport,
+  });
 
   async function handleSignOut() {
     await authClient.signOut({
@@ -69,9 +77,16 @@ export function UserNavMenu({ user, isAdmin }: UserNavMenuProps) {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/user/payments">
-              <CreditCardIcon />
-              Платежи
+            <Link href="/user/payments" className="flex w-full items-center justify-between">
+              <span className="flex items-center gap-2">
+                <CreditCardIcon />
+                Платежи
+              </span>
+              {buyerUnread > 0 && (
+                <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  {buyerUnread}
+                </span>
+              )}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
@@ -80,6 +95,21 @@ export function UserNavMenu({ user, isAdmin }: UserNavMenuProps) {
               Тарифы
             </Link>
           </DropdownMenuItem>
+          {isSupport && (
+            <DropdownMenuItem asChild>
+              <Link href="/support" className="flex w-full items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <HeadphonesIcon />
+                  Поддержка
+                </span>
+                {supportUnread > 0 && (
+                  <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-white">
+                    {supportUnread}
+                  </span>
+                )}
+              </Link>
+            </DropdownMenuItem>
+          )}
           {isAdmin && (
             <DropdownMenuItem asChild>
               <Link href="/admin">

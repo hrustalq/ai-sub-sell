@@ -24,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -39,7 +40,8 @@ import { CheckoutForm } from "./checkout-form";
 type CheckoutExperienceProps = {
   initialPlan: Plan;
   catalogPlans: Plan[];
-  userEmail: string;
+  userEmail?: string;
+  isLoggedIn: boolean;
 };
 
 function PlanOptionCard({
@@ -107,9 +109,11 @@ export function CheckoutExperience({
   initialPlan,
   catalogPlans,
   userEmail,
+  isLoggedIn,
 }: CheckoutExperienceProps) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(initialPlan.id);
+  const [email, setEmail] = useState(userEmail ?? "");
 
   const providerPlans = useMemo(
     () => getProviderPlans(catalogPlans, initialPlan.provider),
@@ -227,10 +231,28 @@ export function CheckoutExperience({
 
             <CardContent className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <Label className="text-muted-foreground">Email</Label>
-                <p className="rounded-md border bg-muted/50 px-3 py-2.5 text-sm font-medium">
-                  {userEmail}
-                </p>
+                <Label htmlFor="buyer-email">Email для чека и доступа к заказу</Label>
+                {isLoggedIn && userEmail ? (
+                  <p className="rounded-md border bg-muted/50 px-3 py-2.5 text-sm font-medium">
+                    {userEmail}
+                  </p>
+                ) : (
+                  <>
+                    <Input
+                      id="buyer-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Регистрация не нужна. После оплаты откроется страница заказа — сохраните
+                      ссылку.
+                    </p>
+                  </>
+                )}
               </div>
 
               {durationOptions.length > 1 && selectedDurationPlan && (
@@ -311,6 +333,7 @@ export function CheckoutExperience({
               <CheckoutForm
                 planId={selected.id}
                 priceLabel={formatPrice(selected.price, selected.currency)}
+                email={isLoggedIn ? userEmail : email}
               />
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheckIcon className="size-4 text-primary" />

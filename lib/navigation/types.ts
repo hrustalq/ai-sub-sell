@@ -5,6 +5,8 @@ export type NavIconName =
   | "package"
   | "users"
   | "credit-card"
+  | "message-square"
+  | "headphones"
   | "user";
 
 /** Serializable nav item — safe to pass from Server Components. */

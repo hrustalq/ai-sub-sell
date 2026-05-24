@@ -75,9 +75,11 @@ export function AdminOverview({ stats, log }: AdminOverviewProps) {
         ))}
       </div>
 
-      <Card className="flex min-h-0 flex-1 flex-col gap-0 py-0">
-        <CardHeader className="shrink-0 border-b border-border px-4 py-3">
-          <CardTitle className="text-sm font-semibold">Журнал событий</CardTitle>
+      <Card className="flex min-h-0 flex-1 flex-col gap-0">
+        <CardHeader className="shrink-0 border-b border-border">
+          <CardTitle className="text-sm font-semibold">
+            Журнал событий
+          </CardTitle>
         </CardHeader>
         <CardContent className="min-h-0 flex-1 p-0">
           <ActivityLog entries={log} />
