@@ -7,6 +7,7 @@ import {
   hashOrderAccessToken,
   isValidEmail,
 } from "@/lib/orders/access";
+import { resolveBuyerUserId } from "@/lib/users/placeholder";
 import { createPayment } from "@/lib/yookassa";
 
 export async function POST(req: Request) {
@@ -35,6 +36,8 @@ export async function POST(req: Request) {
     return Response.json({ error: "Тариф не найден или недоступен" }, { status: 400 });
   }
 
+  const userId = await resolveBuyerUserId(session?.user?.id, buyerEmail);
+
   const orderId = crypto.randomUUID();
   const accessToken = generateOrderAccessToken();
   const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
@@ -43,7 +46,7 @@ export async function POST(req: Request) {
   await db.order.create({
     data: {
       id: orderId,
-      userId: session?.user?.id ?? null,
+      userId,
       buyerEmail,
       accessTokenHash: hashOrderAccessToken(accessToken),
       planId: plan.id,
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
     payment = await createPayment({
       orderId,
       planId: plan.id,
-      userId: session?.user?.id ?? "guest",
+      userId,
       amount: plan.price.toFixed(2),
       currency: plan.currency,
       description: plan.name,

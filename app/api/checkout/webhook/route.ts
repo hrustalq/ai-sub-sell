@@ -1,7 +1,19 @@
 import db from "@/lib/db";
+import {
+  generateOrderAccessToken,
+  hashOrderAccessToken,
+} from "@/lib/orders/access";
+import {
+  sendOrderPaidEmail,
+  sendPaymentReceiptEmail,
+} from "@/lib/orders/emails";
+import { scheduleMessageEmailReminders } from "@/lib/orders/message-reminders";
 
 export async function POST(req: Request) {
-  let event: { event: string; object: { id: string; status: string; metadata?: Record<string, string> } };
+  let event: {
+    event: string;
+    object: { id: string; status: string; metadata?: Record<string, string> };
+  };
   try {
     event = await req.json();
   } catch {
@@ -12,8 +24,25 @@ export async function POST(req: Request) {
   if (!orderId) return new Response(null, { status: 200 });
 
   if (event.event === "payment.succeeded") {
+    const accessToken = generateOrderAccessToken();
+
     const updated = await db.order
-      .update({ where: { id: orderId }, data: { status: "PAID" } })
+      .update({
+        where: { id: orderId },
+        data: {
+          status: "PAID",
+          accessTokenHash: hashOrderAccessToken(accessToken),
+        },
+        select: {
+          id: true,
+          planName: true,
+          amount: true,
+          currency: true,
+          buyerEmail: true,
+          receiptEmailSentAt: true,
+          paidEmailSentAt: true,
+        },
+      })
       .catch(() => null);
 
     if (updated) {
@@ -22,20 +51,47 @@ export async function POST(req: Request) {
         select: { id: true },
       });
       if (!existingWelcome) {
-        await db.orderMessage
+        const welcomeId = crypto.randomUUID();
+        const welcome = await db.orderMessage
           .create({
             data: {
-              id: crypto.randomUUID(),
+              id: welcomeId,
               orderId,
               author: "seller",
               body: "Спасибо за оплату! Мы подготовим данные доступа и разместим их на этой странице. Если есть вопросы — напишите здесь.",
             },
           })
           .catch(() => null);
+
+        if (welcome) {
+          await scheduleMessageEmailReminders({
+            orderId,
+            messageId: welcomeId,
+            messageAuthor: "seller",
+            buyerEmail: updated.buyerEmail,
+            planName: updated.planName,
+          }).catch((err) =>
+            console.error("[webhook] schedule welcome reminder failed", err),
+          );
+        }
+      }
+
+      try {
+        await sendPaymentReceiptEmail(updated);
+      } catch (err) {
+        console.error("[webhook] receipt email failed", orderId, err);
+      }
+
+      try {
+        await sendOrderPaidEmail(updated, accessToken);
+      } catch (err) {
+        console.error("[webhook] paid email failed", orderId, err);
       }
     }
   } else if (event.event === "payment.canceled") {
-    await db.order.update({ where: { id: orderId }, data: { status: "CANCELED" } }).catch(() => null);
+    await db.order
+      .update({ where: { id: orderId }, data: { status: "CANCELED" } })
+      .catch(() => null);
   }
 
   return new Response(null, { status: 200 });

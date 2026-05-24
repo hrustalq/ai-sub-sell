@@ -1,5 +1,9 @@
 import db from "@/lib/db";
 import { getOrderAccessContext } from "@/lib/orders/access";
+import {
+  cancelMessageEmailReminders,
+  scheduleMessageEmailReminders,
+} from "@/lib/orders/message-reminders";
 import { getOrderMessages } from "@/lib/orders/queries";
 import {
   getOrderUnreadCount,
@@ -56,6 +60,14 @@ export async function POST(
     return Response.json({ error: "Сообщение должно быть от 1 до 4000 символов" }, { status: 400 });
   }
 
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { buyerEmail: true, planName: true },
+  });
+  if (!order) {
+    return Response.json({ error: "Заказ не найден" }, { status: 404 });
+  }
+
   const message = await db.orderMessage.create({
     data: {
       id: crypto.randomUUID(),
@@ -71,7 +83,18 @@ export async function POST(
     },
   });
 
+  const recipientViewer = access.authorRole === "seller" ? "buyer" : "seller";
+
   await markOrderMessagesRead(orderId, access.authorRole);
+  await cancelMessageEmailReminders(orderId, access.authorRole);
+
+  await scheduleMessageEmailReminders({
+    orderId,
+    messageId: message.id,
+    messageAuthor: access.authorRole,
+    buyerEmail: order.buyerEmail,
+    planName: order.planName,
+  }).catch((err) => console.error("[messages] schedule reminder failed", err));
 
   return Response.json({
     message: {

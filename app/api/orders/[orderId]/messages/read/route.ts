@@ -1,4 +1,5 @@
 import { getOrderAccessContext } from "@/lib/orders/access";
+import { cancelMessageEmailReminders } from "@/lib/orders/message-reminders";
 import { getOrderUnreadCount, markOrderMessagesRead } from "@/lib/orders/read-state";
 
 export async function POST(
@@ -14,6 +15,7 @@ export async function POST(
   }
 
   await markOrderMessagesRead(orderId, access.authorRole);
+  await cancelMessageEmailReminders(orderId, access.authorRole);
   const unreadCount = await getOrderUnreadCount(orderId, access.authorRole);
 
   return Response.json({ unreadCount });

@@ -42,6 +42,8 @@ function SignInFormInner() {
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<"google" | "github" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +66,33 @@ function SignInFormInner() {
     }
   }
 
+  async function handleMagicLink() {
+    if (!email.trim()) {
+      setError("Укажите email для входа по ссылке");
+      return;
+    }
+
+    setMagicLinkLoading(true);
+    setError(null);
+    setMagicLinkSent(false);
+
+    const callbackUrl = searchParams.get("callbackUrl") ?? "/user/payments";
+
+    const { error: magicError } = await authClient.signIn.magicLink({
+      email: email.trim(),
+      callbackURL: callbackUrl,
+    });
+
+    setMagicLinkLoading(false);
+
+    if (magicError) {
+      setError(magicError.message ?? "Не удалось отправить ссылку");
+      return;
+    }
+
+    setMagicLinkSent(true);
+  }
+
   async function handleSocial(provider: "google" | "github") {
     setSocialLoading(provider);
     const callbackUrl = searchParams.get("callbackUrl") ?? "/";
@@ -84,6 +113,13 @@ function SignInFormInner() {
         {resetSuccess && (
           <div className="mb-4 rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
             Пароль успешно изменён. Войдите с новым паролем.
+          </div>
+        )}
+
+        {magicLinkSent && (
+          <div className="mb-4 rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            Ссылка для входа отправлена на <strong>{email}</strong>. Проверьте почту —
+            после входа откроются ваши заказы.
           </div>
         )}
 
@@ -174,10 +210,21 @@ function SignInFormInner() {
               type="submit"
               className="w-full"
               size="lg"
-              disabled={loading || !!socialLoading}
+              disabled={loading || !!socialLoading || magicLinkLoading}
             >
               {loading && <Spinner className="mr-1" />}
               {loading ? "Вход..." : "Войти"}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={loading || !!socialLoading || magicLinkLoading || !email.trim()}
+              onClick={handleMagicLink}
+            >
+              {magicLinkLoading && <Spinner className="mr-1" />}
+              {magicLinkLoading ? "Отправка..." : "Войти по ссылке на email"}
             </Button>
           </FieldGroup>
         </form>

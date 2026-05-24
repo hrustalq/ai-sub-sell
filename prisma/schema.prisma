@@ -113,11 +113,14 @@ model Order {
   productContent  String?
   yookassaId      String?
   confirmationUrl String?
+  receiptEmailSentAt DateTime?
+  paidEmailSentAt    DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   messages        OrderMessage[]
   messageReads    OrderMessageRead[]
+  messageEmailReminders OrderMessageEmailReminder[]
 
   @@index([userId])
   @@index([yookassaId])
@@ -132,9 +135,29 @@ model OrderMessage {
   body      String
   createdAt DateTime @default(now())
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  emailReminders OrderMessageEmailReminder[]
 
   @@index([orderId, createdAt])
   @@map("order_message")
+}
+
+model OrderMessageEmailReminder {
+  id             String    @id
+  orderId        String
+  messageId      String
+  recipientEmail String
+  viewer         String
+  sendAfter      DateTime
+  sentAt         DateTime?
+  canceledAt     DateTime?
+  createdAt      DateTime  @default(now())
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  message        OrderMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, recipientEmail])
+  @@index([sendAfter, sentAt, canceledAt])
+  @@index([orderId, viewer])
+  @@map("order_message_email_reminder")
 }
 
 model OrderMessageRead {
