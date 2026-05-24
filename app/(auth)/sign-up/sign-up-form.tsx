@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import type { SocialProvider } from "@/lib/auth-providers";
 import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,15 +32,21 @@ import {
 } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 
-export function SignUpForm() {
+type SignUpFormProps = {
+  socialProviders: Record<SocialProvider, boolean>;
+};
+
+export function SignUpForm({ socialProviders }: SignUpFormProps) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<"google" | "github" | null>(null);
+  const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const showSocialLogin = socialProviders.google || socialProviders.github;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,10 +68,20 @@ export function SignUpForm() {
     }
   }
 
-  async function handleSocial(provider: "google" | "github") {
+  async function handleSocial(provider: SocialProvider) {
     setSocialLoading(provider);
-    await authClient.signIn.social({ provider, callbackURL: "/" });
-    setSocialLoading(null);
+    setError(null);
+
+    const { error: socialError } = await authClient.signIn.social({
+      provider,
+      callbackURL: "/",
+      errorCallbackURL: "/sign-in?error=social",
+    });
+
+    if (socialError) {
+      setError(socialError.message ?? "Не удалось войти через соцсеть");
+      setSocialLoading(null);
+    }
   }
 
   return (
@@ -80,36 +97,44 @@ export function SignUpForm() {
         </CardHeader>
 
         <CardContent className="pt-4">
-          <div className="flex flex-col gap-3">
-            <Button
-              variant="outline"
-              className="w-full gap-2"
-              onClick={() => handleSocial("google")}
-              disabled={!!socialLoading || loading}
-            >
-              {socialLoading === "google" ? <Spinner /> : <GoogleIcon />}
-              Продолжить с Google
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full gap-2"
-              onClick={() => handleSocial("github")}
-              disabled={!!socialLoading || loading}
-            >
-              {socialLoading === "github" ? (
-                <Spinner />
-              ) : (
-                <GitHubIcon />
+          {showSocialLogin && (
+            <div className="flex flex-col gap-3">
+              {socialProviders.google && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => handleSocial("google")}
+                  disabled={!!socialLoading || loading}
+                >
+                  {socialLoading === "google" ? <Spinner /> : <GoogleIcon />}
+                  Продолжить с Google
+                </Button>
               )}
-              Продолжить с GitHub
-            </Button>
-          </div>
+              {socialProviders.github && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => handleSocial("github")}
+                  disabled={!!socialLoading || loading}
+                >
+                  {socialLoading === "github" ? (
+                    <Spinner />
+                  ) : (
+                    <GitHubIcon />
+                  )}
+                  Продолжить с GitHub
+                </Button>
+              )}
+            </div>
+          )}
 
-          <div className="relative my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">или</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
+          {showSocialLogin && (
+            <div className="relative my-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">или</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <FieldGroup>

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import type { SocialProvider } from "@/lib/auth-providers";
 import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,16 +32,21 @@ import {
 } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 
-function SignInFormInner() {
+type SignInFormProps = {
+  socialProviders: Record<SocialProvider, boolean>;
+};
+
+function SignInFormInner({ socialProviders }: SignInFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resetSuccess = searchParams.get("reset") === "success";
+  const oauthError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<"google" | "github" | null>(null);
+  const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [magicLinkLoading, setMagicLinkLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
@@ -93,12 +99,25 @@ function SignInFormInner() {
     setMagicLinkSent(true);
   }
 
-  async function handleSocial(provider: "google" | "github") {
+  async function handleSocial(provider: SocialProvider) {
     setSocialLoading(provider);
+    setError(null);
+
     const callbackUrl = searchParams.get("callbackUrl") ?? "/";
-    await authClient.signIn.social({ provider, callbackURL: callbackUrl });
-    setSocialLoading(null);
+
+    const { error: socialError } = await authClient.signIn.social({
+      provider,
+      callbackURL: callbackUrl,
+      errorCallbackURL: "/sign-in?error=social",
+    });
+
+    if (socialError) {
+      setError(socialError.message ?? "Не удалось войти через соцсеть");
+      setSocialLoading(null);
+    }
   }
+
+  const showSocialLogin = socialProviders.google || socialProviders.github;
 
   return (
     <Card>
@@ -123,32 +142,46 @@ function SignInFormInner() {
           </div>
         )}
 
-        <div className="flex flex-col gap-3">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={() => handleSocial("google")}
-            disabled={!!socialLoading || loading}
-          >
-            {socialLoading === "google" ? <Spinner /> : <GoogleIcon />}
-            Продолжить с Google
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={() => handleSocial("github")}
-            disabled={!!socialLoading || loading}
-          >
-            {socialLoading === "github" ? <Spinner /> : <GitHubIcon />}
-            Продолжить с GitHub
-          </Button>
-        </div>
+        {oauthError && (
+          <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            Не удалось войти через соцсеть. Попробуйте снова или используйте email.
+          </div>
+        )}
 
-        <div className="relative my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">или</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
+        {showSocialLogin && (
+          <div className="flex flex-col gap-3">
+            {socialProviders.google && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => handleSocial("google")}
+                disabled={!!socialLoading || loading}
+              >
+                {socialLoading === "google" ? <Spinner /> : <GoogleIcon />}
+                Продолжить с Google
+              </Button>
+            )}
+            {socialProviders.github && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => handleSocial("github")}
+                disabled={!!socialLoading || loading}
+              >
+                {socialLoading === "github" ? <Spinner /> : <GitHubIcon />}
+                Продолжить с GitHub
+              </Button>
+            )}
+          </div>
+        )}
+
+        {showSocialLogin && (
+          <div className="relative my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">или</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <FieldGroup>
@@ -245,7 +278,7 @@ function SignInFormInner() {
   );
 }
 
-export function SignInForm() {
+export function SignInForm({ socialProviders }: SignInFormProps) {
   return (
     <div className="w-full max-w-md">
       <Suspense
@@ -257,7 +290,7 @@ export function SignInForm() {
           </Card>
         }
       >
-        <SignInFormInner />
+        <SignInFormInner socialProviders={socialProviders} />
       </Suspense>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { socialProvidersEnabled } from "@/lib/auth-providers";
 import { SignInForm } from "./sign-in-form";
 
 export const metadata: Metadata = {
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function SignInPage() {
-  return <SignInForm />;
+  return <SignInForm socialProviders={socialProvidersEnabled} />;
 }
