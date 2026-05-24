@@ -43,7 +43,10 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google", "github", "credential", "email-password"],
+      trustedProviders: ["google", "github"],
+      // Placeholder users from checkout have emailVerified=false; allow
+      // linking when Google/GitHub confirms the same email.
+      requireLocalEmailVerified: false,
     },
   },
   emailAndPassword: {

@@ -75,7 +75,7 @@ export function SignUpForm({ socialProviders }: SignUpFormProps) {
     const { error: socialError } = await authClient.signIn.social({
       provider,
       callbackURL: "/",
-      errorCallbackURL: "/sign-in?error=social",
+      errorCallbackURL: "/sign-in",
     });
 
     if (socialError) {

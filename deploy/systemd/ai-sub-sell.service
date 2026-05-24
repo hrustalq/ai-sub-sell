@@ -1,0 +1,25 @@
+[Unit]
+Description=AI Sub Sell (Next.js production)
+After=network.target
+
+[Service]
+Type=simple
+User=__DEPLOY_USER__
+Group=__DEPLOY_USER__
+WorkingDirectory=__APP_DIR__
+EnvironmentFile=__ENV_FILE__
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/env pnpm start
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-sub-sell
+
+# Hardening (adjust if you add writable paths under the app tree)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

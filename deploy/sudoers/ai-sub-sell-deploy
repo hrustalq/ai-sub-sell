@@ -1,0 +1,2 @@
+# Allow the deploy user to restart the app without a password (install via setup-server.sh).
+__DEPLOY_USER__ ALL=(root) NOPASSWD: /bin/systemctl restart ai-sub-sell, /bin/systemctl status ai-sub-sell, /bin/systemctl reload ai-sub-sell

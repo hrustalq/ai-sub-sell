@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_ROOT="${{ secrets.VPS_APP_ROOT }}"
+            if [[ -z "$APP_ROOT" ]]; then APP_ROOT="/opt/ai-sub-sell"; fi
+            APP_DIR="$APP_ROOT/app"
+            export APP_ROOT APP_DIR
+            export SKIP_DEPS_CHECK=1
+            bash "$APP_DIR/deploy/deploy.sh"

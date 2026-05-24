@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

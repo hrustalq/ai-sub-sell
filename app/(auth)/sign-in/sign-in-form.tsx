@@ -40,7 +40,8 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resetSuccess = searchParams.get("reset") === "success";
-  const oauthError = searchParams.get("error");
+  const oauthErrorCode =
+    searchParams.getAll("error").at(-1) ?? searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -108,7 +109,7 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
     const { error: socialError } = await authClient.signIn.social({
       provider,
       callbackURL: callbackUrl,
-      errorCallbackURL: "/sign-in?error=social",
+      errorCallbackURL: "/sign-in",
     });
 
     if (socialError) {
@@ -142,9 +143,11 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
           </div>
         )}
 
-        {oauthError && (
+        {oauthErrorCode && oauthErrorCode !== "social" && (
           <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            Не удалось войти через соцсеть. Попробуйте снова или используйте email.
+            {oauthErrorCode === "account_not_linked"
+              ? "Не удалось привязать Google к существующему аккаунту. Попробуйте войти по email или magic link."
+              : "Не удалось войти через соцсеть. Попробуйте снова или используйте email."}
           </div>
         )}
 

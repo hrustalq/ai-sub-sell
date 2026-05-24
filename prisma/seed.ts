@@ -2,11 +2,12 @@ import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../generated/prisma/client";
 import { seedAdminUser } from "@/lib/admin/seed";
+import { getSqliteDatabaseUrl } from "@/lib/database-url";
 import { seedDemoOrders } from "@/lib/orders/seed";
 import { buildDefaultPlans } from "@/lib/plans/catalog";
 import { LEGACY_PLAN_IDS, planToDbRecord } from "@/lib/plans/seed";
 
-const adapter = new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" });
+const adapter = new PrismaBetterSqlite3({ url: getSqliteDatabaseUrl() });
 const db = new PrismaClient({ adapter });
 
 async function main() {

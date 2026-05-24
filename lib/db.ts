@@ -2,9 +2,10 @@ import "server-only";
 
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../generated/prisma/client";
+import { getSqliteDatabaseUrl } from "./database-url";
 import logger from "./logger";
 
-const adapter = new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" });
+const adapter = new PrismaBetterSqlite3({ url: getSqliteDatabaseUrl() });
 
 const db = new PrismaClient({ adapter, log: ['query', 'info', 'warn', 'error'] });
 
