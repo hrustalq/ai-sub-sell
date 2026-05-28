@@ -126,10 +126,31 @@ else
 fi
 
 service_was_active=0
+service_stopped=0
+
+sudo_systemctl() {
+  if sudo -n systemctl "$@"; then
+    return 0
+  fi
+  return 1
+}
+
+print_sudoers_fix() {
+  echo "Passwordless sudo for systemctl is missing or outdated."
+  echo "On the VPS as root, run once:"
+  echo "  sudo bash $SCRIPT_DIR/apply-sudoers.sh $(id -un)"
+  echo "See docs/DEPLOY.md → Deploy sudo."
+}
+
 if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
   service_was_active=1
   echo "Stopping $SERVICE_NAME to free memory for build..."
-  sudo systemctl stop "$SERVICE_NAME"
+  if sudo_systemctl stop "$SERVICE_NAME"; then
+    service_stopped=1
+  else
+    echo "WARNING: could not stop $SERVICE_NAME (continuing build — may OOM on small VPS)."
+    print_sudoers_fix
+  fi
 fi
 
 echo "Memory before build:"
@@ -145,17 +166,20 @@ if ! pnpm run build; then
     echo "  sudo bash $SCRIPT_DIR/setup-swap.sh"
     echo "See docs/DEPLOY.md → Build OOM."
   fi
-  if [[ "$service_was_active" -eq 1 ]]; then
+  if [[ "$service_stopped" -eq 1 ]]; then
     echo "Restarting $SERVICE_NAME after failed build..."
-    sudo systemctl start "$SERVICE_NAME" || true
+    sudo_systemctl start "$SERVICE_NAME" || true
   fi
   exit "$build_status"
 fi
 
 echo "Restarting $SERVICE_NAME..."
 if systemctl is-enabled --quiet "$SERVICE_NAME" 2>/dev/null; then
-  sudo systemctl restart "$SERVICE_NAME"
-  sudo systemctl --no-pager status "$SERVICE_NAME" || true
+  if ! sudo_systemctl restart "$SERVICE_NAME"; then
+    print_sudoers_fix
+    exit 1
+  fi
+  sudo_systemctl status "$SERVICE_NAME" --no-pager || true
 else
   echo "Service $SERVICE_NAME is not enabled. Run deploy/setup-server.sh first."
   exit 1

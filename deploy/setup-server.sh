@@ -77,11 +77,8 @@ if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
   }
 fi
 
-# Passwordless service restart for deploy user
-SUDOERS_FILE="/etc/sudoers.d/ai-sub-sell-deploy"
-sed "s|__DEPLOY_USER__|$DEPLOY_USER|g" "$SCRIPT_DIR/sudoers/ai-sub-sell-deploy" >"$SUDOERS_FILE"
-chmod 440 "$SUDOERS_FILE"
-visudo -c -f "$SUDOERS_FILE"
+# Passwordless systemctl/nginx for deploy user (uses host systemctl path)
+bash "$SCRIPT_DIR/apply-sudoers.sh" "$DEPLOY_USER"
 
 # systemd
 UNIT_PATH="/etc/systemd/system/ai-sub-sell.service"

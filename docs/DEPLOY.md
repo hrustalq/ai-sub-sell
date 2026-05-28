@@ -142,7 +142,23 @@ sudo -u ai-sub-sell ssh -T git@github.com
 cd /opt/ai-sub-sell/app && sudo -u ai-sub-sell git fetch origin main
 ```
 
-`setup-server.sh` grants passwordless `systemctl restart ai-sub-sell` via `/etc/sudoers.d/ai-sub-sell-deploy`.
+`setup-server.sh` installs passwordless `systemctl` for the deploy user via `deploy/apply-sudoers.sh` (`/etc/sudoers.d/ai-sub-sell-deploy`).
+
+### Deploy sudo
+
+`deploy.sh` stops the app before `next build` (saves RAM) and restarts it after. Both need passwordless sudo for `systemctl` on the VPS.
+
+If deploy fails with `sudo: a password is required` when stopping or restarting the service, refresh sudoers **once as root** (uses the host `systemctl` path — often `/usr/bin/systemctl`, not `/bin/systemctl`):
+
+```bash
+sudo bash /opt/ai-sub-sell/app/deploy/apply-sudoers.sh ai-sub-sell
+```
+
+Verify as the deploy user:
+
+```bash
+sudo -n systemctl status ai-sub-sell
+```
 
 ### SSH deploy troubleshooting
 
@@ -152,6 +168,7 @@ cd /opt/ai-sub-sell/app && sudo -u ai-sub-sell git fetch origin main
 | `unable to authenticate` | Public key not in `~/.ssh/authorized_keys` on the VPS, wrong `VPS_USER`, or wrong key pair |
 | `git@github.com: Permission denied` | Add a **deploy key** on the repo; run `deploy/setup-github-deploy-key.sh` on the VPS |
 | `insufficient permission for adding an object to repository database .git/objects` | `.git` is owned by root (or another user). Run once on the VPS: `sudo chown -R ai-sub-sell:ai-sub-sell /opt/ai-sub-sell/app` — see [Git ownership](#git-ownership) |
+| `sudo: a password is required` (during deploy) | Run [Deploy sudo](#deploy-sudo): `sudo bash .../deploy/apply-sudoers.sh ai-sub-sell` |
 | Missing secrets preflight | Create `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY` in repo or `production` environment secrets |
 
 ### Git ownership
@@ -268,11 +285,8 @@ Then re-run deploy. `deploy.sh` also stops the running app before build to free 
 
 **Minimum server sizing:** 2 GB RAM, or 1 GB RAM + 2 GB swap. CI already type-checks on every push; the VPS build is mainly for production bundles.
 
-If you changed `deploy/sudoers/ai-sub-sell-deploy` (e.g. added `systemctl stop`), re-apply on the server:
+If deploy sudo rules changed, re-apply on the server:
 
 ```bash
-sudo sed "s|__DEPLOY_USER__|ai-sub-sell|g" /opt/ai-sub-sell/app/deploy/sudoers/ai-sub-sell-deploy \
-  > /etc/sudoers.d/ai-sub-sell-deploy
-sudo chmod 440 /etc/sudoers.d/ai-sub-sell-deploy
-sudo visudo -c -f /etc/sudoers.d/ai-sub-sell-deploy
+sudo bash /opt/ai-sub-sell/app/deploy/apply-sudoers.sh ai-sub-sell
 ```
