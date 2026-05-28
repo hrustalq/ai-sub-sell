@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { ModeToggle } from "@/components/mode-toggle";
 import { getNavbarState } from "@/lib/navbar";
 import { UserNavMenu } from "@/components/layout/user-nav-menu";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export async function SiteNavbar() {
         </Link>
 
         <div className="flex items-center gap-2">
+          <ModeToggle />
           {state.status === "guest" ? (
             <>
               <Button asChild size="sm" variant="ghost">
