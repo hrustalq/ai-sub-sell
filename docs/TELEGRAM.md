@@ -132,6 +132,31 @@ curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_SUPPORT_BOT_TOKEN}/setW
 
 Then send a fresh `/start` to the bot and run `pnpm telegram:check` again.
 
+### `Connect Timeout Error` to `api.telegram.org` (IPv6 then IPv4)
+
+If logs show `attempted addresses: 2001:67c:4e8:...:443, 149.154.x.x:443, timeout: 10000ms`, the VPS cannot reach Telegram’s API outbound. Node tries IPv6 first; many VPS hosts have broken IPv6.
+
+On the VPS, compare:
+
+```bash
+source /opt/ai-sub-sell/shared/.env
+curl -4 -m 15 "https://api.telegram.org/bot${TELEGRAM_SELL_BOT_TOKEN}/getMe"
+curl -6 -m 5 "https://api.telegram.org/bot${TELEGRAM_SELL_BOT_TOKEN}/getMe"
+```
+
+If `-4` works but `-6` hangs, force IPv4 for Node (systemd + CLI scripts):
+
+```bash
+# One-time: merge NODE_OPTIONS into /etc/systemd/system/ai-sub-sell.service, then:
+sudo systemctl daemon-reload
+sudo systemctl restart ai-sub-sell
+
+# Ad-hoc scripts:
+NODE_OPTIONS='--dns-result-order=ipv4first' pnpm telegram:check
+```
+
+Production systemd sets `NODE_OPTIONS=--dns-result-order=ipv4first` by default. If **both** curl variants fail, the host or firewall blocks Telegram — use another network or a proxy; webhooks inbound can still work while Bot API calls fail.
+
 ### `Connection timed out` right after restart
 
 Expected if `telegram:check` runs while the service is still starting. Wait a few seconds after `systemctl restart` before checking.
