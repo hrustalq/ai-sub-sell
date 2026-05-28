@@ -15,6 +15,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItemConfig[] = [
     permission: "admin",
   },
   { href: routes.admin.plans, label: "Тарифы", icon: "package", permission: "admin" },
+  { href: routes.admin.counterparties, label: "Контрагенты", icon: "building-2", permission: "admin" },
   { href: routes.admin.users, label: "Пользователи", icon: "users", permission: "admin" },
   { href: routes.admin.payments, label: "Платежи", icon: "credit-card", permission: "admin" },
   { href: routes.admin.support, label: "Заказы", icon: "message-square", permission: "support" },

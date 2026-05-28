@@ -38,7 +38,7 @@ Buyers can open a support conversation not linked to any order via `/support` in
 TELEGRAM_SELL_BOT_TOKEN=...
 TELEGRAM_SUPPORT_BOT_TOKEN=...
 TELEGRAM_SUPPORT_USER_IDS=123456789,987654321
-TELEGRAM_WEBHOOK_SECRET=random-secret
+TELEGRAM_WEBHOOK_SECRET=random-secret-with-letters-digits-underscore-hyphen-only
 ```
 
 `SITE_URL` / `BETTER_AUTH_URL` must be the public HTTPS origin used for webhooks and payment return URLs.
@@ -74,7 +74,11 @@ This registers:
 
 Set `TELEGRAM_AUTO_WEBHOOKS=false` to disable startup registration, or `TELEGRAM_AUTO_WEBHOOKS=true` to enable it outside production (for example with an HTTPS tunnel).
 
-If `TELEGRAM_WEBHOOK_SECRET` is set, the same value is sent to Telegram and must match the `X-Telegram-Bot-Api-Secret-Token` header.
+If `TELEGRAM_WEBHOOK_SECRET` is set, the same value is sent to Telegram and must match the `X-Telegram-Bot-Api-Secret-Token` header. Telegram allows only `A-Z`, `a-z`, `0-9`, `_`, and `-` (1–256 chars). Generate one with:
+
+```bash
+openssl rand -hex 32
+```
 
 ## Notes
 

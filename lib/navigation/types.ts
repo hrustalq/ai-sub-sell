@@ -8,7 +8,8 @@ export type NavIconName =
   | "message-square"
   | "messages-square"
   | "headphones"
-  | "user";
+  | "user"
+  | "building-2";
 
 /** Serializable nav item — safe to pass from Server Components. */
 export type AppNavItemConfig = {

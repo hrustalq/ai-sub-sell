@@ -7,7 +7,9 @@ import { createLogger, logError } from "../lib/logger-script";
 import { getSiteOrigin } from "../lib/site-url";
 import {
   TELEGRAM_BOT_WEBHOOKS,
+  TELEGRAM_WEBHOOK_SECRET_HELP,
   type TelegramBotWebhookConfig,
+  validateTelegramWebhookSecret,
 } from "../lib/telegram/webhooks";
 
 const log = createLogger("telegram-check");
@@ -114,6 +116,14 @@ async function main() {
     },
     "telegram check configuration",
   );
+
+  if (secret) {
+    const validation = validateTelegramWebhookSecret(secret);
+    if (!validation.ok) {
+      log.error({ help: TELEGRAM_WEBHOOK_SECRET_HELP }, validation.error);
+      process.exitCode = 1;
+    }
+  }
 
   const sellToken = process.env.TELEGRAM_SELL_BOT_TOKEN?.trim();
   const supportToken = process.env.TELEGRAM_SUPPORT_BOT_TOKEN?.trim();

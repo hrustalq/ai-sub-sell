@@ -13,6 +13,9 @@ export const routes = {
     supportTelegram: "/admin/support/telegram",
     supportOrder: (orderId: string) => `/admin/support/${orderId}`,
     supportConversation: (conversationId: string) => `/admin/support/chats/${conversationId}`,
+    counterparties: "/admin/counterparties",
+    counterpartyNew: "/admin/counterparties/new",
+    counterpartyEdit: (counterpartyId: string) => `/admin/counterparties/${counterpartyId}/edit`,
   },
   order: (orderId: string) => `/orders/${orderId}`,
 } as const;

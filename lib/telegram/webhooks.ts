@@ -72,6 +72,33 @@ function getWebhookSecret(): string | null {
   return process.env.TELEGRAM_WEBHOOK_SECRET?.trim() || null;
 }
 
+export const TELEGRAM_WEBHOOK_SECRET_HELP =
+  "Use 1-256 characters: A-Z, a-z, 0-9, underscore, hyphen. Example: openssl rand -hex 32";
+
+export function validateTelegramWebhookSecret(
+  secret: string,
+): { ok: true } | { ok: false; error: string } {
+  if (!/^[A-Za-z0-9_-]{1,256}$/.test(secret)) {
+    return {
+      ok: false,
+      error: `Invalid TELEGRAM_WEBHOOK_SECRET. ${TELEGRAM_WEBHOOK_SECRET_HELP}`,
+    };
+  }
+  return { ok: true };
+}
+
+function resolveWebhookSecret(): { secret: string | null; error?: string } {
+  const secret = getWebhookSecret();
+  if (!secret) return { secret: null };
+
+  const validation = validateTelegramWebhookSecret(secret);
+  if (!validation.ok) {
+    return { secret: null, error: validation.error };
+  }
+
+  return { secret };
+}
+
 export function shouldAutoRegisterTelegramWebhooks(): boolean {
   const override = process.env.TELEGRAM_AUTO_WEBHOOKS?.trim().toLowerCase();
   if (override === "true" || override === "1") return true;
@@ -157,7 +184,16 @@ async function ensureBotWebhook(
   }
 
   const body: Record<string, unknown> = { url: expectedUrl };
-  const secret = getWebhookSecret();
+  const { secret, error: secretError } = resolveWebhookSecret();
+  if (secretError) {
+    return {
+      label: config.label,
+      skipped: false,
+      ok: false,
+      username: me.result?.username,
+      error: secretError,
+    };
+  }
   if (secret) {
     body.secret_token = secret;
   }

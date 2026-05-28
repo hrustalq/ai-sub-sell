@@ -9,6 +9,7 @@ import {
   MessagesSquareIcon,
   HeadphonesIcon,
   UserIcon,
+  Building2Icon,
   type LucideIcon,
 } from "lucide-react";
 import type { AppNavItem, AppNavItemConfig, NavIconName } from "@/lib/navigation/types";
@@ -22,6 +23,7 @@ export const NAV_ICONS: Record<NavIconName, LucideIcon> = {
   "messages-square": MessagesSquareIcon,
   headphones: HeadphonesIcon,
   user: UserIcon,
+  "building-2": Building2Icon,
 };
 
 export function resolveNavItems(items: AppNavItemConfig[]): AppNavItem[] {

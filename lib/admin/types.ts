@@ -83,3 +83,52 @@ export type AdminLogEntry = {
   detail: string | null;
   createdAt: string;
 };
+
+export type AdminCounterpartyPricingOptionRecord = {
+  id: string;
+  label: string;
+  price: number;
+  currency: string;
+  notes: string;
+  sortOrder: number;
+  active: boolean;
+};
+
+export type AdminCounterpartyRecord = {
+  id: string;
+  name: string;
+  notes: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  wechatId: string;
+  shopUrl: string;
+  active: boolean;
+  sortOrder: number;
+  pricingOptionsCount: number;
+};
+
+export type AdminCounterpartyDetailRecord = Omit<AdminCounterpartyRecord, "pricingOptionsCount"> & {
+  pricingOptions: AdminCounterpartyPricingOptionRecord[];
+};
+
+export type AdminCounterpartyExportRow = {
+  counterpartyId: string;
+  name: string;
+  notes: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  wechatId: string;
+  shopUrl: string;
+  counterpartyActive: boolean;
+  counterpartySortOrder: number;
+  createdAt: Date;
+  optionId: string | null;
+  optionLabel: string | null;
+  optionPrice: number | null;
+  optionCurrency: string | null;
+  optionNotes: string | null;
+  optionActive: boolean | null;
+  optionSortOrder: number | null;
+};

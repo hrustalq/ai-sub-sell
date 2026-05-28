@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import * as XLSX from "xlsx";
 import { ORDER_STATUS_LABELS } from "@/lib/orders/constants";
 import type { AdminPaymentRow, AdminUserRow } from "@/lib/admin/queries";
-import type { AdminPlanExportRow } from "@/lib/admin/types";
+import type { AdminCounterpartyExportRow, AdminPlanExportRow } from "@/lib/admin/types";
 
 function toWorkbookBuffer(sheetName: string, rows: Record<string, unknown>[]): ArrayBuffer {
   const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -51,6 +51,34 @@ export function buildPlansWorkbook(plans: AdminPlanExportRow[]): ArrayBuffer {
   }));
 
   return toWorkbookBuffer("Тарифы", rows);
+}
+
+export function buildCounterpartiesWorkbook(
+  rows: AdminCounterpartyExportRow[],
+): ArrayBuffer {
+  const sheetRows = rows.map((row) => ({
+    "ID контрагента": row.counterpartyId,
+    "Название контрагента": row.name,
+    Заметки: row.notes,
+    "Контактное лицо": row.contactName,
+    Email: row.contactEmail,
+    Телефон: row.contactPhone,
+    WeChat: row.wechatId,
+    Магазин: row.shopUrl,
+    "Контрагент активен": row.counterpartyActive ? "Да" : "Нет",
+    "Порядок контрагента": row.counterpartySortOrder,
+    "Дата создания": format(row.createdAt, "dd.MM.yyyy HH:mm"),
+    "ID позиции": row.optionId ?? "",
+    "Название позиции": row.optionLabel ?? "",
+    Цена: row.optionPrice ?? "",
+    Валюта: row.optionCurrency ?? "",
+    "Заметки позиции": row.optionNotes ?? "",
+    "Позиция активна":
+      row.optionActive == null ? "" : row.optionActive ? "Да" : "Нет",
+    "Порядок позиции": row.optionSortOrder ?? "",
+  }));
+
+  return toWorkbookBuffer("Контрагенты", sheetRows);
 }
 
 export function buildPaymentsWorkbook(payments: AdminPaymentRow[]): ArrayBuffer {

@@ -269,3 +269,38 @@ model OrderMessageRead {
   @@id([orderId, viewer])
   @@map("order_message_read")
 }
+
+model Counterparty {
+  id           String                     @id
+  name         String
+  notes        String                     @default("")
+  contactName  String                     @default("")
+  contactEmail String                     @default("")
+  contactPhone String                     @default("")
+  wechatId     String                     @default("")
+  shopUrl      String                     @default("")
+  active       Boolean                    @default(true)
+  sortOrder    Int                        @default(0)
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  pricingOptions CounterpartyPricingOption[]
+
+  @@map("counterparty")
+}
+
+model CounterpartyPricingOption {
+  id             String       @id
+  counterpartyId String
+  label          String
+  price          Float
+  currency       String       @default("CNY")
+  notes          String       @default("")
+  sortOrder      Int          @default(0)
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  counterparty   Counterparty @relation(fields: [counterpartyId], references: [id], onDelete: Cascade)
+
+  @@index([counterpartyId, sortOrder])
+  @@map("counterparty_pricing_option")
+}
