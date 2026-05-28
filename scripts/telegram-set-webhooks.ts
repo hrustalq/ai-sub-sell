@@ -15,6 +15,7 @@ async function main() {
   const result = await ensureTelegramWebhooks({
     skipOriginCheck: true,
     force: true,
+    dropPendingUpdates: true,
   });
 
   if (result.bots.length === 0) {

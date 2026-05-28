@@ -91,14 +91,19 @@ async function checkBot(bot: TelegramBotWebhookConfig): Promise<boolean> {
   }
 
   if (info?.last_error_message) {
-    const when = info.last_error_date
-      ? new Date(info.last_error_date * 1000).toISOString()
-      : "unknown";
-    log.error(
-      { label: bot.label, when, message: info.last_error_message },
-      "last webhook error",
+    const errorAt = info.last_error_date ? info.last_error_date * 1000 : 0;
+    const when = errorAt ? new Date(errorAt).toISOString() : "unknown";
+    const ageMs = errorAt ? Date.now() - errorAt : 0;
+    const staleErrorMs = 15 * 60 * 1000;
+    const stale = ageMs > staleErrorMs;
+    const logFn = stale ? log.warn.bind(log) : log.error.bind(log);
+    logFn(
+      { label: bot.label, when, message: info.last_error_message, stale },
+      stale ? "last webhook error (stale)" : "last webhook error",
     );
-    ok = false;
+    if (!stale) {
+      ok = false;
+    }
   }
 
   return ok;

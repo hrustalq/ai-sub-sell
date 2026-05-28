@@ -1,26 +1,42 @@
 import "server-only";
 
-import { webhookCallback } from "grammy/web";
 import type { Bot } from "grammy";
+import type { Update } from "grammy/types";
+import { after } from "next/server";
 import { createLogger, logError } from "@/lib/logger/core";
 
 const log = createLogger("telegram-webhook");
 
-/** Telegram allows ~60s; grammY defaults to 10s which is too tight for DB + email flows. */
-const WEBHOOK_TIMEOUT_MS = 55_000;
-
+/**
+ * Telegram must receive HTTP 2xx before handler work finishes (DB, SMTP, Bot API).
+ * grammY's webhookCallback waits for the full middleware chain, which causes
+ * "Connection timed out" when replies or email are slow.
+ */
 export function createTelegramWebhookHandler(bot: Bot, label: string) {
-  const handle = webhookCallback(bot, "std/http", {
-    timeoutMilliseconds: WEBHOOK_TIMEOUT_MS,
-  });
-
   return async (req: Request): Promise<Response> => {
+    let update: Update;
     try {
-      return await handle(req);
+      update = (await req.json()) as Update;
     } catch (err) {
-      logError(log, "telegram webhook request failed", err, { label });
-      // Acknowledge to stop Telegram retry storms; the error is logged for investigation.
-      return new Response(null, { status: 200 });
+      logError(log, "telegram webhook invalid JSON", err, { label });
+      return new Response(null, { status: 400 });
     }
+
+    if (typeof update.update_id !== "number") {
+      return new Response(null, { status: 400 });
+    }
+
+    after(async () => {
+      try {
+        await bot.handleUpdate(update);
+      } catch (err) {
+        logError(log, "telegram webhook processing failed", err, {
+          label,
+          updateId: update.update_id,
+        });
+      }
+    });
+
+    return new Response(null, { status: 200 });
   };
 }

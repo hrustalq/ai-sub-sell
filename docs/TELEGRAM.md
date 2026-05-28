@@ -82,11 +82,11 @@ openssl rand -hex 32
 
 ## Troubleshooting webhooks
 
-### `Request timed out after 10000 ms` in journalctl
+### `Request timed out after 10000 ms` or `Connection timed out` in journalctl / `telegram:check`
 
-grammY’s default webhook timeout is 10 seconds. Real updates (DB, email verification, replies) can exceed that and Telegram sees HTTP 500. The app uses a 55s timeout instead.
+Telegram must get HTTP **200 quickly**. Handlers that await DB, SMTP, or `ctx.reply` (outbound Bot API) used to block the webhook response; Telegram then reports `Connection timed out` or `500`.
 
-After deploying the fix, restart the service and re-check:
+Webhook routes **acknowledge immediately** and process updates in the background via Next.js `after()`. After deploying, restart and re-check:
 
 ```bash
 sudo systemctl restart ai-sub-sell
@@ -110,6 +110,27 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" \
 ```
 
 Send a new message to the bot (or wait for Telegram to retry pending updates) and run `pnpm telegram:check` again.
+
+### `pending updates` keeps growing / `Connection timed out` after deploy
+
+Telegram retries failed deliveries. A minimal curl body (`{"update_id":1}`) returns 200 immediately, but **real** queued updates can still time out (for example during restart, or when handlers are slow).
+
+Clear the backlog and cap parallel deliveries:
+
+```bash
+pnpm telegram:webhooks   # force setWebhook + drop_pending_updates + max_connections=10
+```
+
+Or only for the support bot:
+
+```bash
+source /opt/ai-sub-sell/shared/.env
+curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_SUPPORT_BOT_TOKEN}/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d "{\"url\":\"https://ai-sub.store/api/telegram/support/webhook\",\"secret_token\":\"${TELEGRAM_WEBHOOK_SECRET}\",\"drop_pending_updates\":true,\"max_connections\":10}"
+```
+
+Then send a fresh `/start` to the bot and run `pnpm telegram:check` again.
 
 ### `Connection timed out` right after restart
 

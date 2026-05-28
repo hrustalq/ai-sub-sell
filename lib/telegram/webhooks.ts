@@ -62,6 +62,8 @@ type EnsureTelegramWebhooksOptions = {
   skipOriginCheck?: boolean;
   /** Always call setWebhook even when the URL already matches (CLI). */
   force?: boolean;
+  /** Discard queued updates on setWebhook (use after deploy/restart to stop retry storms). */
+  dropPendingUpdates?: boolean;
 };
 
 function getBotToken(config: TelegramBotWebhookConfig): string | null {
@@ -196,6 +198,10 @@ async function ensureBotWebhook(
   }
   if (secret) {
     body.secret_token = secret;
+  }
+  body.max_connections = 10;
+  if (options.dropPendingUpdates) {
+    body.drop_pending_updates = true;
   }
 
   const registered = await telegramApi<true>(token, "setWebhook", body);
