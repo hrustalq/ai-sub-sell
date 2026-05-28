@@ -204,6 +204,38 @@ It **does not** delete or replace `/var/lib/ai-sub-sell/data/`.
 sudo journalctl -u ai-sub-sell -f
 sudo nginx -t && sudo systemctl status nginx
 ./deploy/check-deps.sh
+free -h && swapon --show
 ```
 
 OAuth redirect URIs must use your production `BETTER_AUTH_URL` (e.g. `https://ai-sub.store/api/auth/callback/google`).
+
+### Build OOM (`Killed`, exit code 137)
+
+`next build` compiles the app, then runs a full TypeScript check. On a 1 GB VPS this often exceeds available RAM and the Linux OOM killer stops the process:
+
+```text
+Running TypeScript ...
+Killed
+[ELIFECYCLE] Command failed with exit code 137.
+```
+
+Exit code **137** = SIGKILL (128 + 9), almost always out of memory.
+
+**Fix (recommended):** add 2 GB swap once on the VPS as root:
+
+```bash
+sudo bash /opt/ai-sub-sell/app/deploy/setup-swap.sh
+```
+
+Then re-run deploy. `deploy.sh` also stops the running app before build to free RAM.
+
+**Minimum server sizing:** 2 GB RAM, or 1 GB RAM + 2 GB swap. CI already type-checks on every push; the VPS build is mainly for production bundles.
+
+If you changed `deploy/sudoers/ai-sub-sell-deploy` (e.g. added `systemctl stop`), re-apply on the server:
+
+```bash
+sudo sed "s|__DEPLOY_USER__|ai-sub-sell|g" /opt/ai-sub-sell/app/deploy/sudoers/ai-sub-sell-deploy \
+  > /etc/sudoers.d/ai-sub-sell-deploy
+sudo chmod 440 /etc/sudoers.d/ai-sub-sell-deploy
+sudo visudo -c -f /etc/sudoers.d/ai-sub-sell-deploy
+```

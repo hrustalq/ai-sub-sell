@@ -125,8 +125,32 @@ else
   pnpm run db:push
 fi
 
+service_was_active=0
+if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+  service_was_active=1
+  echo "Stopping $SERVICE_NAME to free memory for build..."
+  sudo systemctl stop "$SERVICE_NAME"
+fi
+
+echo "Memory before build:"
+free -h || true
+
 echo "Building Next.js..."
-pnpm run build
+if ! pnpm run build; then
+  build_status=$?
+  if [[ "$build_status" -eq 137 ]] || [[ "$build_status" -eq 143 ]]; then
+    echo ""
+    echo "Build was killed (exit $build_status) — usually out of memory on small VPS instances."
+    echo "Fix on the VPS once as root:"
+    echo "  sudo bash $SCRIPT_DIR/setup-swap.sh"
+    echo "See docs/DEPLOY.md → Build OOM."
+  fi
+  if [[ "$service_was_active" -eq 1 ]]; then
+    echo "Restarting $SERVICE_NAME after failed build..."
+    sudo systemctl start "$SERVICE_NAME" || true
+  fi
+  exit "$build_status"
+fi
 
 echo "Restarting $SERVICE_NAME..."
 if systemctl is-enabled --quiet "$SERVICE_NAME" 2>/dev/null; then
