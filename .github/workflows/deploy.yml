@@ -41,4 +41,9 @@ jobs:
             APP_DIR="$APP_ROOT/app"
             export APP_ROOT APP_DIR
             export SKIP_DEPS_CHECK=1
-            bash "$APP_DIR/deploy/deploy.sh"
+            # Pull before deploy.sh so CI does not run a stale copy (bash holds the inode across in-script git pull).
+            cd "$APP_DIR"
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            exec bash "$APP_DIR/deploy/deploy.sh"

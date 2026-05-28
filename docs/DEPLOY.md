@@ -160,6 +160,8 @@ Verify as the deploy user:
 sudo -n systemctl status ai-sub-sell
 ```
 
+Until this is done, deploy may print `WARNING: could not stop …` and continue the build, but **restart will still fail** at the end without passwordless sudo.
+
 ### SSH deploy troubleshooting
 
 | Log message | Fix |

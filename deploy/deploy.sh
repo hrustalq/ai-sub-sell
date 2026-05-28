@@ -15,6 +15,7 @@ GIT_REF="${GIT_REF:-main}"
 BACKUP_KEEP="${BACKUP_KEEP:-10}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEPLOY_SCRIPT="$SCRIPT_DIR/deploy.sh"
 
 echo "=== Deploy: $(date -Iseconds) ==="
 echo "APP_DIR=$APP_DIR"
@@ -53,14 +54,16 @@ if [[ "$DB_PATH" != /* ]]; then
   exit 1
 fi
 
-if [[ -f "$DB_PATH" ]]; then
-  echo "Preserving existing database: $DB_PATH"
-  backup="$SHARED_DIR/backups/production-$(date +%Y%m%d%H%M%S).db"
-  cp -a "$DB_PATH" "$backup"
-  echo "Backup: $backup"
-  ls -1t "$SHARED_DIR/backups"/production-*.db 2>/dev/null | tail -n +$((BACKUP_KEEP + 1)) | xargs -r rm -f
-else
-  echo "No database yet at $DB_PATH — migrations will create schema."
+if [[ -z "${DEPLOY_REEXECED:-}" ]]; then
+  if [[ -f "$DB_PATH" ]]; then
+    echo "Preserving existing database: $DB_PATH"
+    backup="$SHARED_DIR/backups/production-$(date +%Y%m%d%H%M%S).db"
+    cp -a "$DB_PATH" "$backup"
+    echo "Backup: $backup"
+    ls -1t "$SHARED_DIR/backups"/production-*.db 2>/dev/null | tail -n +$((BACKUP_KEEP + 1)) | xargs -r rm -f
+  else
+    echo "No database yet at $DB_PATH — migrations will create schema."
+  fi
 fi
 
 cd "$APP_DIR"
@@ -74,6 +77,10 @@ if [[ ! -w .git/objects ]]; then
   echo "Do not run git pull or deploy.sh as root in $APP_DIR."
   echo "See docs/DEPLOY.md → Git ownership."
   exit 1
+fi
+
+if [[ -z "${DEPLOY_REEXECED:-}" && -f "$DEPLOY_SCRIPT" ]]; then
+  DEPLOY_SCRIPT_HASH_BEFORE="$(sha256sum "$DEPLOY_SCRIPT" | cut -d' ' -f1)"
 fi
 
 echo "Fetching $GIT_REF..."
@@ -100,6 +107,15 @@ fi
 rm -f "$fetch_err"
 git checkout "$GIT_REF"
 git pull --ff-only origin "$GIT_REF"
+
+# bash keeps reading the script inode opened at start — after git pull, re-exec so new deploy logic runs.
+if [[ -z "${DEPLOY_REEXECED:-}" && -n "${DEPLOY_SCRIPT_HASH_BEFORE:-}" && -f "$DEPLOY_SCRIPT" ]]; then
+  deploy_script_hash_after="$(sha256sum "$DEPLOY_SCRIPT" | cut -d' ' -f1)"
+  if [[ "$deploy_script_hash_after" != "$DEPLOY_SCRIPT_HASH_BEFORE" ]]; then
+    echo "Deploy script updated — re-running with new version..."
+    exec env DEPLOY_REEXECED=1 bash "$DEPLOY_SCRIPT"
+  fi
+fi
 
 # Never delete or replace the data directory; only schema migrations touch the DB file.
 echo "Installing dependencies..."
