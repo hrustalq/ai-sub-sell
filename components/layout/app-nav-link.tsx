@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { AppNavItem } from "@/lib/navigation/types";
-import { getActiveNavHref, navItemMatches } from "@/lib/navigation/active-nav";
+import { navItemMatches } from "@/lib/navigation/active-nav";
 import { cn } from "@/lib/utils";
 
 type AppNavLinkProps = {
@@ -13,10 +13,17 @@ type AppNavLinkProps = {
   onNavigate?: () => void;
 };
 
-export function AppNavLink({ item, variant, activeHref, onNavigate }: AppNavLinkProps) {
+export function AppNavLink({
+  item,
+  variant,
+  activeHref,
+  onNavigate,
+}: AppNavLinkProps) {
   const pathname = usePathname();
   const isActive =
-    activeHref !== undefined ? activeHref === item.href : navItemMatches(pathname, item);
+    activeHref !== undefined
+      ? activeHref === item.href
+      : navItemMatches(pathname, item);
 
   const Icon = item.icon;
 

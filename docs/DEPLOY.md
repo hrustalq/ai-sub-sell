@@ -146,7 +146,7 @@ cd /opt/ai-sub-sell/app && sudo -u ai-sub-sell git fetch origin main
 
 ### Deploy sudo
 
-`deploy.sh` stops the app before `next build` (saves RAM) and restarts it after. Both need passwordless sudo for `systemctl` on the VPS.
+`deploy.sh` keeps the app running during `next build` (avoids long 502 windows), then restarts it once the new build is ready. On a very small VPS where the build OOMs, set `STOP_SERVICE_FOR_BUILD=1` in the deploy environment to stop the app before build (site will 502 for the whole build). Both stop/restart need passwordless sudo for `systemctl` on the VPS.
 
 If deploy fails with `sudo: a password is required` when stopping or restarting the service, refresh sudoers **once as root** (uses the host `systemctl` path — often `/usr/bin/systemctl`, not `/bin/systemctl`):
 
@@ -279,6 +279,24 @@ Env (in `shared/.env`):
 
 ## 8. Troubleshooting
 
+### 502 Bad Gateway during deploy
+
+nginx returns **502** when nothing listens on `127.0.0.1:3000`. Older `deploy.sh` versions stopped the app before `next build`, so the site was down for the entire build (often several minutes).
+
+**Current behavior:** build runs while the previous version keeps serving; only the final `systemctl restart` causes a short gap (usually a few seconds). nginx serves `deploy/nginx/maintenance.html` with HTTP 503 during that gap if the site config includes `proxy_intercept_errors` (see `deploy/nginx/ai-sub-sell.conf`).
+
+**On an existing VPS** after pulling this fix, merge the nginx `location` blocks from `deploy/nginx/ai-sub-sell.conf` into `/etc/nginx/sites-available/ai-sub-sell` (certbot may have added SSL stanzas — keep those), then:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**If build OOMs** with the app still running, use the old trade-off:
+
+```bash
+STOP_SERVICE_FOR_BUILD=1 sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/deploy.sh
+```
+
 ```bash
 pnpm logs:errors
 sudo nginx -t && sudo systemctl status nginx
@@ -306,7 +324,7 @@ Exit code **137** = SIGKILL (128 + 9), almost always out of memory.
 sudo bash /opt/ai-sub-sell/app/deploy/setup-swap.sh
 ```
 
-Then re-run deploy. `deploy.sh` also stops the running app before build to free RAM.
+Then re-run deploy. If the build still OOMs with the app running, deploy with `STOP_SERVICE_FOR_BUILD=1` to stop the app before build (expect 502 until deploy finishes).
 
 **Minimum server sizing:** 2 GB RAM, or 1 GB RAM + 2 GB swap. CI already type-checks on every push; the VPS build is mainly for production bundles.
 

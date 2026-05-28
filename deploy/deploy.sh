@@ -141,8 +141,8 @@ else
   pnpm run db:push
 fi
 
-service_was_active=0
 service_stopped=0
+APP_PORT="${PORT:-3000}"
 
 sudo_systemctl() {
   if sudo -n systemctl "$@"; then
@@ -158,15 +158,33 @@ print_sudoers_fix() {
   echo "See docs/DEPLOY.md → Deploy sudo."
 }
 
-if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
-  service_was_active=1
-  echo "Stopping $SERVICE_NAME to free memory for build..."
-  if sudo_systemctl stop "$SERVICE_NAME"; then
-    service_stopped=1
-  else
-    echo "WARNING: could not stop $SERVICE_NAME (continuing build — may OOM on small VPS)."
-    print_sudoers_fix
+wait_for_app() {
+  local url="http://127.0.0.1:${APP_PORT}/"
+  echo "Waiting for app at $url..."
+  for _ in $(seq 1 90); do
+    if curl -sf --max-time 2 "$url" >/dev/null 2>&1; then
+      echo "App is responding."
+      return 0
+    fi
+    sleep 1
+  done
+  echo "WARNING: app did not respond within 90s — check: sudo journalctl -u $SERVICE_NAME -n 50"
+  return 1
+}
+
+if [[ "${STOP_SERVICE_FOR_BUILD:-0}" == "1" ]]; then
+  if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+    echo "Stopping $SERVICE_NAME to free memory for build (STOP_SERVICE_FOR_BUILD=1)..."
+    if sudo_systemctl stop "$SERVICE_NAME"; then
+      service_stopped=1
+    else
+      echo "WARNING: could not stop $SERVICE_NAME (continuing build — may OOM on small VPS)."
+      print_sudoers_fix
+    fi
   fi
+else
+  echo "Building while $SERVICE_NAME stays up (old version serves traffic until restart)."
+  echo "Set STOP_SERVICE_FOR_BUILD=1 only if the build OOMs on a small VPS."
 fi
 
 echo "Memory before build:"
@@ -195,6 +213,7 @@ if systemctl is-enabled --quiet "$SERVICE_NAME" 2>/dev/null; then
     print_sudoers_fix
     exit 1
   fi
+  wait_for_app || true
   sudo_systemctl status "$SERVICE_NAME" --no-pager || true
 else
   echo "Service $SERVICE_NAME is not enabled. Run deploy/setup-server.sh first."
