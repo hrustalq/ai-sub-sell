@@ -125,7 +125,7 @@ export function OrderChat({
       )}
     >
       <CardHeader className={cn("shrink-0 space-y-1", compact ? "pb-2 pt-4" : "pb-3")}>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
+        <CardTitle className="flex flex-wrap items-center gap-2">
           <MessageSquareIcon className="size-5 shrink-0" />
           Чат с продавцом
           {unreadCount > 0 && (

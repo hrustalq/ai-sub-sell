@@ -56,7 +56,7 @@ export function ForgotPasswordForm() {
             <div className="flex size-12 items-center justify-center rounded-full bg-muted mb-2">
               <MailCheck className="size-6 text-muted-foreground" />
             </div>
-            <CardTitle className="text-xl">Проверьте почту</CardTitle>
+            <CardTitle className="text-h3 font-semibold">Проверьте почту</CardTitle>
             <CardDescription>
               Если аккаунт с адресом <strong>{email}</strong> существует, мы
               отправили ссылку для сброса пароля.
@@ -92,7 +92,7 @@ export function ForgotPasswordForm() {
     <div className="w-full max-w-md">
       <Card>
         <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl font-semibold tracking-tight">
+          <CardTitle className="text-h2 font-semibold">
             Забыли пароль?
           </CardTitle>
           <CardDescription>

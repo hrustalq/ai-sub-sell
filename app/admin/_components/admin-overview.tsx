@@ -43,10 +43,8 @@ export function AdminOverview({ stats, log }: AdminOverviewProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <div className="shrink-0">
-        <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
-          Обзор
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1>Обзор</h1>
+        <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
           Ключевые показатели и последние события
         </p>
       </div>
@@ -60,7 +58,7 @@ export function AdminOverview({ stats, log }: AdminOverviewProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2 px-4 pb-3">
-              <p className="text-xl font-bold tabular-nums">{card.value}</p>
+              <p className="text-h3 font-bold tabular-nums">{card.value}</p>
               <p className="text-xs text-muted-foreground">{card.hint}</p>
               <Button
                 asChild

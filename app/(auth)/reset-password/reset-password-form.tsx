@@ -46,7 +46,7 @@ function ResetPasswordFormInner() {
           <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 mb-2">
             <ShieldAlert className="size-6 text-destructive" />
           </div>
-          <CardTitle className="text-xl">Недействительная ссылка</CardTitle>
+          <CardTitle className="text-h3 font-semibold">Недействительная ссылка</CardTitle>
           <CardDescription>
             Ссылка для сброса пароля недействительна или устарела.
           </CardDescription>
@@ -89,7 +89,7 @@ function ResetPasswordFormInner() {
   return (
     <Card>
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle className="text-h2 font-semibold">
           Новый пароль
         </CardTitle>
         <CardDescription>

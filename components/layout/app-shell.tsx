@@ -41,7 +41,7 @@ export function AppShell({
         <div className="flex h-14 shrink-0 items-center border-b border-border px-5">
           <Link
             href={brand.href}
-            className="font-bold tracking-tight text-foreground"
+            className="text-base font-semibold tracking-tight text-foreground"
           >
             <BrandMark {...brand} />
           </Link>
@@ -71,7 +71,7 @@ export function AppShell({
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:hidden">
           <Link
             href={brand.href}
-            className="font-bold tracking-tight text-foreground"
+            className="text-base font-semibold tracking-tight text-foreground"
           >
             <BrandMark {...brand} />
           </Link>

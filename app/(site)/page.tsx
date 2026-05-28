@@ -138,8 +138,8 @@ export default async function Home() {
                 <div className="rounded-xl bg-primary/10 p-3">
                   <Icon className="size-6 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground">{title}</h3>
-                <p className="text-sm text-muted-foreground">{desc}</p>
+                <h3 className="text-h4 font-semibold">{title}</h3>
+                <p className="mx-auto text-sm leading-relaxed text-muted-foreground">{desc}</p>
               </div>
             ))}
           </div>
@@ -150,10 +150,8 @@ export default async function Home() {
         <section id="pricing" className="bg-background px-4 py-20">
           <div className="mx-auto flex max-w-5xl flex-col gap-12">
             <div className="flex flex-col gap-2 text-center">
-              <h2 className="text-3xl font-bold text-foreground">
-                Тарифы по провайдерам
-              </h2>
-              <p className="text-muted-foreground">
+              <h2>Тарифы по провайдерам</h2>
+              <p className="mx-auto text-lead text-muted-foreground">
                 Переключайте вкладки, выбирайте опцию и срок — скидка
                 рассчитывается автоматически
               </p>
@@ -164,7 +162,7 @@ export default async function Home() {
 
         <section className="bg-muted px-4 py-16">
           <div className="mx-auto flex max-w-5xl flex-col gap-8">
-            <h2 className="text-2xl font-bold text-foreground">Материалы</h2>
+            <h2>Материалы</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {resources.map(({ label, href }) => (
                 <a
@@ -184,18 +182,16 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-background px-4 py-16">
-          <div className="mx-auto flex max-w-2xl flex-col gap-8">
-            <h2 className="text-center text-2xl font-bold text-foreground">
-              Частые вопросы
-            </h2>
+        <section className="bg-background px-4 py-16 sm:py-20">
+          <div className="mx-auto flex w-full max-w-prose flex-col gap-10">
+            <h2 className="text-center">Частые вопросы</h2>
             <Accordion type="single" collapsible>
               {faq.map(({ q, a }, i) => (
                 <AccordionItem key={i} value={`item-${i}`}>
-                  <AccordionTrigger className="text-left text-foreground">
+                  <AccordionTrigger className="py-5 text-base font-semibold leading-snug text-foreground hover:no-underline sm:text-lg">
                     {q}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
+                  <AccordionContent className="pb-5 text-base leading-relaxed text-foreground/80">
                     {a}
                   </AccordionContent>
                 </AccordionItem>
@@ -206,10 +202,8 @@ export default async function Home() {
 
         <section className="bg-muted px-4 py-16 text-center">
           <div className="mx-auto flex max-w-xl flex-col items-center gap-6">
-            <h2 className="text-3xl font-bold text-foreground">
-              Начните с любого провайдера
-            </h2>
-            <p className="text-muted-foreground">
+            <h2>Начните с любого провайдера</h2>
+            <p className="text-lead text-muted-foreground">
               Выберите сервис, опцию и срок — оплата и активация за несколько
               минут.
             </p>

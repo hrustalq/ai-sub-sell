@@ -170,10 +170,10 @@ export function CheckoutExperience({
 
           <div className="flex flex-1 flex-col justify-center gap-8">
             <div>
-              <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/60">
+              <p className="text-xs font-medium uppercase tracking-[var(--tracking-overline)] text-primary-foreground/60">
                 {getProviderLabel(selected.provider, providers)}
               </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+              <h1 className="mt-2 text-h1 font-semibold">
                 {selected.tierLabel}
               </h1>
               <p className="mt-1 text-primary-foreground/60">{selected.period}</p>
@@ -208,7 +208,7 @@ export function CheckoutExperience({
           <div className="mt-10 border-t border-primary-foreground/15 pt-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-primary-foreground/60">К оплате</span>
-              <span className="text-xl font-semibold tabular-nums">
+              <span className="text-h4 font-semibold tabular-nums">
                 {formatPrice(selected.price, selected.currency)}
               </span>
             </div>

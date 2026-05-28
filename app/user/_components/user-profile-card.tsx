@@ -27,8 +27,8 @@ export function UserProfileCard({ user }: { user: UserProfileData }) {
             <AvatarFallback className="text-sm font-medium">{user.initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-semibold text-foreground">{user.name}</p>
-            <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+            <p className="truncate text-h4 font-semibold text-foreground">{user.name}</p>
+            <p className="truncate text-sm leading-relaxed text-muted-foreground">{user.email}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {user.emailVerified ? (
                 <Badge variant="secondary">Email подтверждён</Badge>

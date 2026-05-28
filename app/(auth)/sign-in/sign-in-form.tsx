@@ -123,7 +123,7 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
   return (
     <Card>
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle className="text-h2 font-semibold">
           Добро пожаловать
         </CardTitle>
         <CardDescription>Войдите в свой аккаунт</CardDescription>

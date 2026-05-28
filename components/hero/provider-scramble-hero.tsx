@@ -46,12 +46,10 @@ export function ProviderScrambleHero({ providers, showSignIn }: ProviderScramble
 
       <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-3">
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
-            Провайдеры
-          </p>
+          <p className="text-overline">Провайдеры</p>
 
           <div
-            className="relative flex h-[1.1em] w-full items-center justify-center text-5xl sm:text-7xl md:text-8xl"
+            className="relative flex h-[1.1em] w-full items-center justify-center text-display"
             style={{ minWidth: `${longestLabel}ch` }}
           >
             <AnimatePresence mode="wait">
@@ -65,7 +63,7 @@ export function ProviderScrambleHero({ providers, showSignIn }: ProviderScramble
               >
                 <ScrambleText
                   text={activeProvider.label}
-                  className="text-5xl font-bold tracking-tight text-foreground sm:text-7xl md:text-8xl"
+                  className="text-display tracking-display font-bold text-foreground"
                   staggerDelay={0.05}
                   duration={0.5}
                 />
@@ -73,7 +71,7 @@ export function ProviderScrambleHero({ providers, showSignIn }: ProviderScramble
             </AnimatePresence>
           </div>
 
-          <div className="relative mx-auto w-full max-w-lg min-h-12 sm:min-h-6">
+          <div className="relative mx-auto grid w-full max-w-lg min-h-12 place-items-center px-2 *:col-start-1 *:row-start-1 sm:min-h-14">
             <AnimatePresence mode="wait">
               <motion.p
                 key={`${activeProvider.id}-desc`}
@@ -81,7 +79,7 @@ export function ProviderScrambleHero({ providers, showSignIn }: ProviderScramble
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="absolute inset-x-0 top-0 text-sm text-muted-foreground sm:text-base"
+                className="text-center text-sm leading-relaxed text-muted-foreground sm:text-base"
               >
                 {activeProvider.description}
               </motion.p>
@@ -108,11 +106,11 @@ export function ProviderScrambleHero({ providers, showSignIn }: ProviderScramble
         </div>
 
         <div className="flex max-w-2xl flex-col items-center gap-4">
-          <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
+          <h1 className="text-h1 font-semibold">
             Подписки на AI‑инструменты{" "}
             <span className="text-primary">в одном месте</span>
           </h1>
-          <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="mx-auto max-w-xl text-lead text-muted-foreground">
             Сравните опции, выберите срок и оплатите напрямую. Скидки при оплате на 3, 6 и 12
             месяцев.
           </p>

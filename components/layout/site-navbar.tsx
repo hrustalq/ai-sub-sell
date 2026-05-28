@@ -11,7 +11,7 @@ export async function SiteNavbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/" className="font-bold tracking-tight text-foreground">
+        <Link href="/" className="text-base font-semibold tracking-tight text-foreground">
           <BrandLogo />
         </Link>
 

@@ -88,7 +88,7 @@ export function SignUpForm({ socialProviders }: SignUpFormProps) {
     <div className="w-full max-w-md">
       <Card>
         <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl font-semibold tracking-tight">
+          <CardTitle className="text-h2 font-semibold">
             Создать аккаунт
           </CardTitle>
           <CardDescription>

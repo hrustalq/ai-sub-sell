@@ -28,11 +28,11 @@ export function PageShell({
     >
       <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
-            {title}
-          </h1>
+          <h1>{title}</h1>
           {description && (
-            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+            <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
+              {description}
+            </p>
           )}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

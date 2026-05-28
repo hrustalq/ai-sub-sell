@@ -9,6 +9,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
   variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistSans = Geist({

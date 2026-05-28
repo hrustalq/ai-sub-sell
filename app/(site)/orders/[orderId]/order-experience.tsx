@@ -121,7 +121,7 @@ export function OrderExperience({
       <div className="shrink-0 flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">Заказ</p>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-h1">
             {order.planName}
           </h1>
           <OrderStatusBadge status={order.status} />
@@ -159,7 +159,7 @@ export function OrderExperience({
       <div className="grid min-h-0 flex-1 gap-4 sm:gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card className="flex min-h-0 flex-col overflow-visible lg:max-h-full">
           <CardHeader className="shrink-0">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2">
               <PackageIcon className="size-5" />
               Купленный товар
             </CardTitle>

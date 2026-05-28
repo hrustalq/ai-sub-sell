@@ -122,7 +122,7 @@ export function buildDefaultPlans(providers: ProviderMeta[] = DEFAULT_PROVIDERS)
           period: formatDurationPeriod(months),
           limits: tier.limits,
           tag: tier.tag ?? null,
-          badge: highlight ? (tier.badge ?? null) : months === 12 ? "−20%" : null,
+          badge: highlight ? (tier.badge ?? null) : null,
           highlight,
           provider: provider.id,
           tier: tier.id,

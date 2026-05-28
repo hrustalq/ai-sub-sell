@@ -73,11 +73,9 @@ export function HowItWorksSection({ steps }: HowItWorksSectionProps) {
           variants={headerVariants}
           className="flex flex-col gap-2 text-center"
         >
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground">
-            Процесс
-          </p>
-          <h2 className="text-3xl font-bold text-foreground">Как это работает</h2>
-          <p className="mx-auto max-w-lg text-muted-foreground">
+          <p className="text-overline">Процесс</p>
+          <h2>Как это работает</h2>
+          <p className="mx-auto max-w-lg text-lead text-muted-foreground">
             Четыре шага от выбора провайдера до активации доступа
           </p>
         </motion.header>
@@ -115,12 +113,8 @@ export function HowItWorksSection({ steps }: HowItWorksSectionProps) {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Шаг {index + 1}
-                      </p>
-                      <h3 className="text-lg font-semibold leading-snug text-foreground">
-                        {step.title}
-                      </h3>
+                      <p className="text-overline tracking-wide">Шаг {index + 1}</p>
+                      <h3 className="text-h4 font-semibold">{step.title}</h3>
                       <p className="text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
                     </div>
                   </article>

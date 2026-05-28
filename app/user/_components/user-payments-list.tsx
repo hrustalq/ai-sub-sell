@@ -50,7 +50,7 @@ export function UserPaymentsList({ orders }: { orders: UserOrderRecord[] }) {
                 </time>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                <p className="text-lg font-bold tabular-nums text-foreground">
+                <p className="text-h4 font-bold tabular-nums text-foreground">
                   {formatPrice(order.amount, order.currency)}
                 </p>
                 <div className="flex flex-wrap gap-2">
