@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { CheckIcon, ShieldCheckIcon, SparklesIcon } from "lucide-react";
 import type { Plan } from "@/lib/plans/client";
 import {
@@ -111,7 +110,6 @@ export function CheckoutExperience({
   userEmail,
   isLoggedIn,
 }: CheckoutExperienceProps) {
-  const router = useRouter();
   const [selectedId, setSelectedId] = useState(initialPlan.id);
   const [email, setEmail] = useState(userEmail ?? "");
 
@@ -154,7 +152,7 @@ export function CheckoutExperience({
 
   function selectPlan(plan: Plan) {
     setSelectedId(plan.id);
-    router.replace(`/checkout/${plan.id}`, { scroll: false });
+    window.history.replaceState(null, "", `/checkout/${plan.id}`);
   }
 
   return (
