@@ -80,6 +80,41 @@ If `TELEGRAM_WEBHOOK_SECRET` is set, the same value is sent to Telegram and must
 openssl rand -hex 32
 ```
 
+## Troubleshooting webhooks
+
+### `Request timed out after 10000 ms` in journalctl
+
+grammY’s default webhook timeout is 10 seconds. Real updates (DB, email verification, replies) can exceed that and Telegram sees HTTP 500. The app uses a 55s timeout instead.
+
+After deploying the fix, restart the service and re-check:
+
+```bash
+sudo systemctl restart ai-sub-sell
+sleep 5
+pnpm telegram:check
+```
+
+### `last webhook error` in `pnpm telegram:check`
+
+This comes from Telegram’s `getWebhookInfo` and reflects the **last failed delivery**, not the current config. If manual curl with the secret returns HTTP 200, registration is fine — Telegram clears the error after the next successful update.
+
+Test locally on the VPS:
+
+```bash
+source /opt/ai-sub-sell/shared/.env
+curl -sS -o /dev/null -w "HTTP %{http_code}\n" \
+  -X POST "https://ai-sub.store/api/telegram/sell/webhook" \
+  -H "Content-Type: application/json" \
+  -H "X-Telegram-Bot-Api-Secret-Token: $TELEGRAM_WEBHOOK_SECRET" \
+  -d '{"update_id":1}'
+```
+
+Send a new message to the bot (or wait for Telegram to retry pending updates) and run `pnpm telegram:check` again.
+
+### `Connection timed out` right after restart
+
+Expected if `telegram:check` runs while the service is still starting. Wait a few seconds after `systemctl restart` before checking.
+
 ## Notes
 
 - Orders created in Telegram store `buyerTelegramUserId` for notifications.

@@ -254,9 +254,25 @@ export async function ensureTelegramWebhooks(
   };
 }
 
+async function warmTelegramBots(): Promise<void> {
+  const { getSellBot, getSupportBot, isSellBotEnabled, isSupportBotEnabled } =
+    await import("@/lib/telegram/bots");
+
+  const tasks: Promise<void>[] = [];
+  if (isSellBotEnabled()) tasks.push(getSellBot().init());
+  if (isSupportBotEnabled()) tasks.push(getSupportBot().init());
+  await Promise.all(tasks);
+}
+
 export async function runTelegramStartup(): Promise<void> {
   const { runTelegramCommandRegistration } = await import("@/lib/telegram/commands");
   await runTelegramCommandRegistration();
+
+  try {
+    await warmTelegramBots();
+  } catch (err) {
+    logError(log, "telegram bot warm-up failed", err);
+  }
 
   if (!shouldAutoRegisterTelegramWebhooks()) {
     log.debug("telegram startup skipped — auto webhooks disabled for this environment");

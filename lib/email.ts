@@ -10,6 +10,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  connectionTimeout: 10_000,
+  greetingTimeout: 10_000,
+  socketTimeout: 15_000,
 });
 
 const FROM = `"${process.env.SMTP_FROM_NAME ?? SITE_NAME}" <${process.env.SMTP_FROM_EMAIL}>`;

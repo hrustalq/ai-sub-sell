@@ -1,11 +1,13 @@
-import { webhookCallback } from "grammy/web";
 import {
   getSellBot,
   isSellBotEnabled,
   verifyTelegramWebhookSecret,
 } from "@/lib/telegram/bots";
+import { createTelegramWebhookHandler } from "@/lib/telegram/webhook-handler";
 
 export const runtime = "nodejs";
+
+const handleWebhook = createTelegramWebhookHandler(getSellBot(), "sell");
 
 export async function POST(req: Request) {
   if (!isSellBotEnabled()) {
@@ -14,5 +16,5 @@ export async function POST(req: Request) {
   if (!verifyTelegramWebhookSecret(req)) {
     return new Response(null, { status: 401 });
   }
-  return webhookCallback(getSellBot(), "std/http")(req);
+  return handleWebhook(req);
 }
