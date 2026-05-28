@@ -38,9 +38,14 @@ export async function setTelegramAccountEmail(
     return { ok: false, error: "Укажите корректный email" };
   }
 
-  await db.telegramAccount.update({
+  await db.telegramAccount.upsert({
     where: { telegramUserId },
-    data: { email: normalized },
+    create: {
+      telegramUserId,
+      chatId: telegramUserId,
+      email: normalized,
+    },
+    update: { email: normalized },
   });
 
   return { ok: true };

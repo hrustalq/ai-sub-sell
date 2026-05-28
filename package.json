@@ -10,8 +10,9 @@
     "db:seed": "npx tsx prisma/seed.ts",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "telegram:poll": "tsx scripts/telegram-poll.ts",
-    "telegram:webhooks": "tsx scripts/telegram-set-webhooks.ts"
+    "telegram:poll": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",
+    "telegram:webhooks": "tsx scripts/telegram-set-webhooks.ts",
+    "telegram:check": "tsx scripts/telegram-check.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
