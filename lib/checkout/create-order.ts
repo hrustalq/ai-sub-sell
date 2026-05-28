@@ -77,6 +77,7 @@ export async function createCheckoutOrder(
       currency: plan.currency,
       description: plan.name,
       returnUrl: orderUrl,
+      customerEmail: buyerEmail,
     });
   } catch {
     await db.order.update({ where: { id: orderId }, data: { status: "CANCELED" } });

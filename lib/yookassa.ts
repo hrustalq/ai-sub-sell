@@ -17,6 +17,41 @@ export interface CreatePaymentParams {
   currency: string;
   description: string;
   returnUrl: string;
+  customerEmail: string;
+}
+
+function receiptVatCode(): number {
+  const raw = process.env.YOOKASSA_RECEIPT_VAT_CODE?.trim() ?? "1";
+  const code = Number.parseInt(raw, 10);
+  if (!Number.isFinite(code)) {
+    throw new Error("YOOKASSA_RECEIPT_VAT_CODE must be a number");
+  }
+  return code;
+}
+
+function receiptPaymentSubject(): string {
+  return process.env.YOOKASSA_RECEIPT_PAYMENT_SUBJECT?.trim() || "service";
+}
+
+function buildReceipt(params: CreatePaymentParams) {
+  return {
+    customer: {
+      email: params.customerEmail,
+    },
+    items: [
+      {
+        description: params.description.slice(0, 128),
+        quantity: 1,
+        amount: {
+          value: params.amount,
+          currency: params.currency,
+        },
+        vat_code: receiptVatCode(),
+        payment_mode: "full_payment",
+        payment_subject: receiptPaymentSubject(),
+      },
+    ],
+  };
 }
 
 export interface YookassaPayment {
@@ -46,6 +81,7 @@ export async function createPayment(params: CreatePaymentParams): Promise<Yookas
         planId: params.planId,
         userId: params.userId,
       },
+      receipt: buildReceipt(params),
     }),
   });
 
