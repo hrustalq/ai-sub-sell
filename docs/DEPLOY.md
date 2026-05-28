@@ -151,7 +151,21 @@ cd /opt/ai-sub-sell/app && sudo -u ai-sub-sell git fetch origin main
 | `ssh: no key found` | `VPS_SSH_KEY` is missing, empty, or not a valid private key PEM/OpenSSH block |
 | `unable to authenticate` | Public key not in `~/.ssh/authorized_keys` on the VPS, wrong `VPS_USER`, or wrong key pair |
 | `git@github.com: Permission denied` | Add a **deploy key** on the repo; run `deploy/setup-github-deploy-key.sh` on the VPS |
+| `insufficient permission for adding an object to repository database .git/objects` | `.git` is owned by root (or another user). Run once on the VPS: `sudo chown -R ai-sub-sell:ai-sub-sell /opt/ai-sub-sell/app` — see [Git ownership](#git-ownership) |
 | Missing secrets preflight | Create `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY` in repo or `production` environment secrets |
+
+### Git ownership
+
+Deploy and all `git` commands on the VPS must run as the deploy user (`ai-sub-sell`), not root. If the repo was cloned or updated with `sudo git ...`, `.git/objects` may be owned by root and `git fetch` fails even when the GitHub deploy key is configured.
+
+Fix once as root (adjust paths if `VPS_APP_ROOT` differs):
+
+```bash
+sudo chown -R ai-sub-sell:ai-sub-sell /opt/ai-sub-sell/app
+sudo -u ai-sub-sell git -C /opt/ai-sub-sell/app fetch origin main
+```
+
+`deploy/setup-github-deploy-key.sh` also resets app ownership when run as root.
 
 ## 5. Manual deploy
 

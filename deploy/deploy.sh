@@ -65,13 +65,39 @@ fi
 
 cd "$APP_DIR"
 
-echo "Fetching $GIT_REF..."
-if ! git fetch origin "$GIT_REF"; then
-  echo "git fetch failed. If the remote is git@github.com:..., configure a GitHub deploy key:"
-  echo "  sudo bash $SCRIPT_DIR/setup-github-deploy-key.sh"
-  echo "See docs/DEPLOY.md → GitHub deploy key."
+deploy_user="$(id -un)"
+if [[ ! -w .git/objects ]]; then
+  git_owner="$(stat -c '%U' .git 2>/dev/null || echo unknown)"
+  echo "Cannot write to $APP_DIR/.git/objects (owned by $git_owner, running as $deploy_user)."
+  echo "Fix on the VPS once as root, then re-run deploy:"
+  echo "  sudo chown -R $deploy_user:$deploy_user $APP_DIR"
+  echo "Do not run git pull or deploy.sh as root in $APP_DIR."
+  echo "See docs/DEPLOY.md → Git ownership."
   exit 1
 fi
+
+echo "Fetching $GIT_REF..."
+fetch_err="$(mktemp)"
+if ! git fetch origin "$GIT_REF" 2>"$fetch_err"; then
+  if grep -q 'insufficient permission for adding an object to repository database' "$fetch_err"; then
+    git_owner="$(stat -c '%U' .git 2>/dev/null || echo unknown)"
+    echo "git fetch failed: .git/objects is not writable by $deploy_user (owned by $git_owner)."
+    echo "Fix on the VPS once as root:"
+    echo "  sudo chown -R $deploy_user:$deploy_user $APP_DIR"
+    echo "See docs/DEPLOY.md → Git ownership."
+  elif grep -qE 'Permission denied \(publickey\)|Could not read from remote repository' "$fetch_err"; then
+    echo "git fetch failed: VPS cannot authenticate to GitHub."
+    echo "Configure a GitHub deploy key:"
+    echo "  sudo bash $SCRIPT_DIR/setup-github-deploy-key.sh"
+    echo "See docs/DEPLOY.md → GitHub deploy key."
+  else
+    cat "$fetch_err" >&2
+    echo "git fetch failed. See docs/DEPLOY.md → Troubleshooting."
+  fi
+  rm -f "$fetch_err"
+  exit 1
+fi
+rm -f "$fetch_err"
 git checkout "$GIT_REF"
 git pull --ff-only origin "$GIT_REF"
 

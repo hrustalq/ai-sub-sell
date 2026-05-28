@@ -42,6 +42,7 @@ chown "$DEPLOY_USER:$DEPLOY_USER" "$SSH_CONFIG"
 
 APP_DIR="${APP_DIR:-/opt/ai-sub-sell/app}"
 if [[ -d "$APP_DIR/.git" ]]; then
+  chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
   sudo -u "$DEPLOY_USER" git config --global --add safe.directory "$APP_DIR"
 fi
 
