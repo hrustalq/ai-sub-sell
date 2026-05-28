@@ -11,11 +11,13 @@ import {
   type TelegramBotWebhookConfig,
   validateTelegramWebhookSecret,
 } from "../lib/telegram/webhooks";
+import { telegramFetch } from "../lib/telegram/telegram-fetch";
 
 const log = createLogger("telegram-check");
+const TELEGRAM_API = "https://api.telegram.org";
 
 async function telegramApi<T>(token: string, method: string): Promise<T> {
-  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`);
+  const res = await telegramFetch(`${TELEGRAM_API}/bot${token}/${method}`);
   return res.json() as Promise<T>;
 }
 
@@ -144,7 +146,10 @@ async function main() {
     );
   }
 
-  const results = await Promise.all(TELEGRAM_BOT_WEBHOOKS.map(checkBot));
+  const results: boolean[] = [];
+  for (const bot of TELEGRAM_BOT_WEBHOOKS) {
+    results.push(await checkBot(bot));
+  }
   if (!results.every(Boolean)) {
     process.exitCode = 1;
   }

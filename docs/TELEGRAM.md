@@ -157,6 +157,12 @@ NODE_OPTIONS='--dns-result-order=ipv4first' pnpm telegram:check
 
 Production systemd sets `NODE_OPTIONS=--dns-result-order=ipv4first` by default. If **both** curl variants fail, the host or firewall blocks Telegram — use another network or a proxy; webhooks inbound can still work while Bot API calls fail.
 
+If `getMe` succeeds but the next API call times out, the route is flaky (parallel bursts or provider filtering). The app retries Telegram HTTP calls (30s timeout, 3 attempts). Run checks sequentially:
+
+```bash
+NODE_OPTIONS='--dns-result-order=ipv4first' pnpm telegram:check
+```
+
 ### `Connection timed out` right after restart
 
 Expected if `telegram:check` runs while the service is still starting. Wait a few seconds after `systemctl restart` before checking.

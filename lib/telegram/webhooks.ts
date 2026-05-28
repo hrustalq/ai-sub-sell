@@ -1,5 +1,6 @@
 import { createLogger, logError } from "@/lib/logger/core";
 import { getSiteOrigin } from "@/lib/site-url";
+import { telegramFetch } from "@/lib/telegram/telegram-fetch";
 
 const log = createLogger("telegram-webhooks");
 const TELEGRAM_API = "https://api.telegram.org";
@@ -125,7 +126,7 @@ async function telegramApi<T>(
       }
     : {};
 
-  const res = await fetch(`${TELEGRAM_API}/bot${token}/${method}`, init);
+  const res = await telegramFetch(`${TELEGRAM_API}/bot${token}/${method}`, init);
   return res.json() as Promise<TelegramApiResponse<T>>;
 }
 

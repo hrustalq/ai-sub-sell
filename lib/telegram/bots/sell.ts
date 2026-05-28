@@ -6,6 +6,7 @@ import { groupPlansByProvider } from "@/lib/plans/grouping";
 import { SITE_NAME } from "@/lib/brand";
 import { upsertTelegramAccount, resolveBuyerEmailForTelegram } from "@/lib/telegram/accounts";
 import { getSellBotToken } from "@/lib/telegram/config";
+import { telegramBotClientConfig } from "@/lib/telegram/telegram-fetch";
 import { escapeHtml, formatOrderSummary, truncate } from "@/lib/telegram/format";
 import {
   CB,
@@ -48,7 +49,7 @@ export function createSellBot(): Bot {
     throw new Error("TELEGRAM_SELL_BOT_TOKEN is not configured");
   }
 
-  const bot = new Bot(token);
+  const bot = new Bot(token, telegramBotClientConfig);
 
   catchBotErrors(bot, "sell");
 

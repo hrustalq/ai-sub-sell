@@ -4,6 +4,7 @@ import { getSupportOrders } from "@/lib/support/queries";
 import { SITE_NAME } from "@/lib/brand";
 import { upsertTelegramAccount } from "@/lib/telegram/accounts";
 import { getSupportBotToken } from "@/lib/telegram/config";
+import { telegramBotClientConfig } from "@/lib/telegram/telegram-fetch";
 import { isSupportTelegramUser } from "@/lib/telegram/support-access";
 import { escapeHtml, formatOrderSummary, truncate } from "@/lib/telegram/format";
 import { supportOrderActionsKeyboard, supportOrderListKeyboard, supportGeneralChatActionsKeyboard, supportGeneralChatListKeyboard } from "@/lib/telegram/keyboards";
@@ -48,7 +49,7 @@ export function createSupportBot(): Bot {
     throw new Error("TELEGRAM_SUPPORT_BOT_TOKEN is not configured");
   }
 
-  const bot = new Bot(token);
+  const bot = new Bot(token, telegramBotClientConfig);
 
   catchBotErrors(bot, "support");
 

@@ -1,5 +1,6 @@
 import { createLogger, logError } from "@/lib/logger/core";
 import { getSellBotToken, getSupportBotToken } from "@/lib/telegram/config";
+import { telegramFetch } from "@/lib/telegram/telegram-fetch";
 
 const log = createLogger("telegram-commands");
 const TELEGRAM_API = "https://api.telegram.org";
@@ -32,7 +33,7 @@ type BotCommandsConfig = {
 };
 
 async function setBotCommands(config: BotCommandsConfig): Promise<boolean> {
-  const res = await fetch(`${TELEGRAM_API}/bot${config.token}/setMyCommands`, {
+  const res = await telegramFetch(`${TELEGRAM_API}/bot${config.token}/setMyCommands`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ commands: config.commands }),
