@@ -200,7 +200,8 @@ async function ensureBotWebhook(
   if (secret) {
     body.secret_token = secret;
   }
-  body.max_connections = 10;
+  // Serialize deliveries on small VPS; parallel POSTs can stall nginx → Telegram timeouts.
+  body.max_connections = 1;
   if (options.dropPendingUpdates) {
     body.drop_pending_updates = true;
   }

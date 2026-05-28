@@ -86,7 +86,7 @@ openssl rand -hex 32
 
 Telegram must get HTTP **200 quickly**. Handlers that await DB, SMTP, or `ctx.reply` (outbound Bot API) used to block the webhook response; Telegram then reports `Connection timed out` or `500`.
 
-Webhook routes **acknowledge immediately** and process updates in the background via Next.js `after()`. Each update calls `bot.init()` before `handleUpdate` (grammY requires this when not using `webhookCallback`). After deploying, restart and re-check:
+Webhook routes return **200 immediately** (with `Connection: close`) and process updates in a detached async task. Each update calls `bot.init()` before `handleUpdate`. Webhooks use `max_connections=1` so Telegram does not overload a small VPS. After deploying, restart and re-check:
 
 ```bash
 sudo systemctl restart ai-sub-sell
@@ -118,7 +118,7 @@ Telegram retries failed deliveries. A minimal curl body (`{"update_id":1}`) retu
 Clear the backlog and cap parallel deliveries:
 
 ```bash
-pnpm telegram:webhooks   # force setWebhook + drop_pending_updates + max_connections=10
+pnpm telegram:webhooks   # force setWebhook + drop_pending_updates + max_connections=1
 ```
 
 Or only for the support bot:
@@ -127,7 +127,7 @@ Or only for the support bot:
 source /opt/ai-sub-sell/shared/.env
 curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_SUPPORT_BOT_TOKEN}/setWebhook" \
   -H "Content-Type: application/json" \
-  -d "{\"url\":\"https://ai-sub.store/api/telegram/support/webhook\",\"secret_token\":\"${TELEGRAM_WEBHOOK_SECRET}\",\"drop_pending_updates\":true,\"max_connections\":10}"
+  -d "{\"url\":\"https://ai-sub.store/api/telegram/support/webhook\",\"secret_token\":\"${TELEGRAM_WEBHOOK_SECRET}\",\"drop_pending_updates\":true,\"max_connections\":1}"
 ```
 
 Then send a fresh `/start` to the bot and run `pnpm telegram:check` again.

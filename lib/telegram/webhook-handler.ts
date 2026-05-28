@@ -2,16 +2,15 @@ import "server-only";
 
 import type { Bot } from "grammy";
 import type { Update } from "grammy/types";
-import { after } from "next/server";
 import { ensureBotInitialized } from "@/lib/telegram/bots";
 import { createLogger, logError } from "@/lib/logger/core";
 
 const log = createLogger("telegram-webhook");
 
 /**
- * Telegram must receive HTTP 2xx before handler work finishes (DB, SMTP, Bot API).
- * grammY's webhookCallback waits for the full middleware chain, which causes
- * "Connection timed out" when replies or email are slow.
+ * Telegram must get HTTP 2xx and a closed connection before slow work (DB, SMTP, Bot API).
+ * Do not use Next.js after() here — nginx may keep the upstream socket open until it finishes,
+ * which still looks like "Connection timed out" to Telegram.
  */
 export function createTelegramWebhookHandler(bot: Bot, label: string) {
   return async (req: Request): Promise<Response> => {
@@ -27,18 +26,25 @@ export function createTelegramWebhookHandler(bot: Bot, label: string) {
       return new Response(null, { status: 400 });
     }
 
-    after(async () => {
-      try {
-        await ensureBotInitialized(bot);
-        await bot.handleUpdate(update);
-      } catch (err) {
-        logError(log, "telegram webhook processing failed", err, {
-          label,
-          updateId: update.update_id,
-        });
-      }
-    });
+    void processTelegramUpdate(bot, label, update);
 
-    return new Response(null, { status: 200 });
+    return new Response(null, {
+      status: 200,
+      headers: { Connection: "close" },
+    });
   };
+}
+
+function processTelegramUpdate(bot: Bot, label: string, update: Update): void {
+  void (async () => {
+    try {
+      await ensureBotInitialized(bot);
+      await bot.handleUpdate(update);
+    } catch (err) {
+      logError(log, "telegram webhook processing failed", err, {
+        label,
+        updateId: update.update_id,
+      });
+    }
+  })();
 }
