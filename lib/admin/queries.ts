@@ -2,6 +2,7 @@ import "server-only";
 
 import db from "@/lib/db";
 import { createdAtRangeWhere, type ExportDateRange } from "@/lib/admin/export-range";
+import { isCoreAdminEmail } from "@/lib/rbac";
 import type { AdminLogEntry, AdminStatsSnapshot } from "@/lib/admin/types";
 
 export type AdminStats = AdminStatsSnapshot;
@@ -14,6 +15,9 @@ export type AdminUserRow = {
   createdAt: Date;
   ordersCount: number;
   paidTotal: number;
+  rbacAdmin: boolean;
+  rbacSupport: boolean;
+  telegramUserId: string | null;
 };
 
 export type AdminPaymentRow = {
@@ -153,8 +157,40 @@ export async function getAdminUsers(
       createdAt: user.createdAt,
       ordersCount: user.orders.length,
       paidTotal: paidOrders.reduce((sum, o) => sum + o.amount, 0),
+      rbacAdmin: user.rbacAdmin,
+      rbacSupport: user.rbacSupport,
+      telegramUserId: user.telegramUserId,
     };
   });
+}
+
+export async function getAdminUserById(userId: string) {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: {
+      orders: {
+        select: { status: true, amount: true },
+      },
+    },
+  });
+
+  if (!user) return null;
+
+  const paidOrders = user.orders.filter((o) => o.status === "PAID");
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    createdAt: user.createdAt,
+    ordersCount: user.orders.length,
+    paidTotal: paidOrders.reduce((sum, o) => sum + o.amount, 0),
+    rbacAdmin: user.rbacAdmin,
+    rbacSupport: user.rbacSupport,
+    telegramUserId: user.telegramUserId,
+    isCoreAdmin: isCoreAdminEmail(user.email),
+    telegramLinked: Boolean(user.telegramUserId),
+  };
 }
 
 export async function getAdminPayments(
@@ -162,6 +198,39 @@ export async function getAdminPayments(
 ): Promise<AdminPaymentRow[]> {
   const orders = await db.order.findMany({
     where: range ? createdAtRangeWhere(range) : undefined,
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
+
+  return orders.map((order) => ({
+    id: order.id,
+    status: order.status,
+    planId: order.planId,
+    planName: order.planName,
+    amount: order.amount,
+    currency: order.currency,
+    buyerEmail: order.buyerEmail,
+    yookassaId: order.yookassaId,
+    createdAt: order.createdAt,
+    user: order.user,
+  }));
+}
+
+export async function getAdminUserPayments(userId: string): Promise<AdminPaymentRow[]> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  if (!user) return [];
+
+  const orders = await db.order.findMany({
+    where: {
+      OR: [{ userId }, { buyerEmail: user.email.trim().toLowerCase() }],
+    },
     orderBy: { createdAt: "desc" },
     include: {
       user: {

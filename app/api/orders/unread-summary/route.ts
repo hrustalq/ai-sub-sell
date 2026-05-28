@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getOrderAccessContext } from "@/lib/orders/access";
-import { getUnreadCountsForOrders, type MessageViewer } from "@/lib/orders/read-state";
-import { isSupportEmail } from "@/lib/support/auth";
+import { getUnreadCountsForOrders, getTotalUnreadCount, type MessageViewer } from "@/lib/orders/read-state";
+import { getTotalSupportConversationUnreadCount } from "@/lib/support/conversations/read-state";
+import { getUserPermissionsById } from "@/lib/rbac";
 import db from "@/lib/db";
 
 export async function GET(req: Request) {
@@ -10,6 +11,9 @@ export async function GET(req: Request) {
   if (!session?.user) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const permissions = await getUserPermissionsById(session.user.id, session.user.email);
+  const canAccessSupport = permissions?.canAccessSupport ?? false;
 
   const url = new URL(req.url);
   const viewerParam = url.searchParams.get("viewer");
@@ -19,7 +23,7 @@ export async function GET(req: Request) {
   let viewer: MessageViewer;
 
   if (viewerParam === "seller") {
-    if (!isSupportEmail(session.user.email)) {
+    if (!canAccessSupport) {
       return Response.json({ error: "Доступ запрещён" }, { status: 403 });
     }
     viewer = "seller";
@@ -30,7 +34,7 @@ export async function GET(req: Request) {
     }
     viewer = access.authorRole;
   } else {
-    viewer = isSupportEmail(session.user.email) ? "seller" : "buyer";
+    viewer = canAccessSupport ? "seller" : "buyer";
   }
 
   if (orderId) {
@@ -47,20 +51,27 @@ export async function GET(req: Request) {
   }
 
   if (viewer === "seller") {
-    const orders = await db.order.findMany({ select: { id: true } });
+    const [orders, orderUnreadTotal, conversationUnreadTotal] = await Promise.all([
+      db.order.findMany({ select: { id: true } }),
+      getTotalUnreadCount("seller"),
+      getTotalSupportConversationUnreadCount("seller"),
+    ]);
     const counts = await getUnreadCountsForOrders(
       orders.map((order) => order.id),
       "seller",
     );
 
-    let totalUnread = 0;
     const orderSummaries = orders.map((order) => {
       const unreadCount = counts.get(order.id) ?? 0;
-      totalUnread += unreadCount;
       return { orderId: order.id, unreadCount };
     });
 
-    return Response.json({ totalUnread, orders: orderSummaries });
+    return Response.json({
+      totalUnread: orderUnreadTotal + conversationUnreadTotal,
+      orderUnread: orderUnreadTotal,
+      conversationUnread: conversationUnreadTotal,
+      orders: orderSummaries,
+    });
   }
 
   const userOrders = await db.order.findMany({

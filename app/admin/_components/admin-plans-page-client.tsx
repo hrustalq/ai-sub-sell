@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PlusIcon } from "lucide-react";
 import type { AdminPlansProviderGroup } from "@/lib/admin/types";
 import type { ProviderMeta } from "@/lib/plans/client";
+import { routes } from "@/lib/routes";
 import { AdminPageShell } from "@/app/admin/_components/admin-page-shell";
 import { AddProviderButton } from "@/app/admin/_components/manage-providers-button";
 import { ExportPlansExcelButton } from "@/app/admin/_components/export-plans-excel-button";
@@ -31,7 +32,7 @@ export function AdminPlansPageClient({ groups, providers }: AdminPlansPageClient
           <ExportPlansExcelButton providers={providers} />
           <AddProviderButton onClick={() => setCreateProviderOpen(true)} />
           <Button asChild size="sm">
-            <Link href="/admin/plans/new" className="gap-2">
+            <Link href={routes.admin.planNew} className="gap-2">
               <PlusIcon className="size-4" />
               Новый тариф
             </Link>

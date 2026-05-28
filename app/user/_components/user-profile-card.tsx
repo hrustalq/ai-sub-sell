@@ -14,6 +14,7 @@ export type UserProfileData = {
   initials: string;
   emailVerified: boolean;
   isAdmin: boolean;
+  adminPanelHref?: string;
   createdAt: string | null;
 };
 
@@ -64,9 +65,9 @@ export function UserProfileCard({ user }: { user: UserProfileData }) {
           <Button asChild variant="outline" size="sm">
             <Link href="/#pricing">К тарифам</Link>
           </Button>
-          {user.isAdmin && (
+          {user.isAdmin && user.adminPanelHref && (
             <Button asChild variant="outline" size="sm">
-              <Link href="/admin">Админ-панель</Link>
+              <Link href={user.adminPanelHref}>Админ-панель</Link>
             </Button>
           )}
         </div>

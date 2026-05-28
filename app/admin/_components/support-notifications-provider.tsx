@@ -14,7 +14,7 @@ export function SupportNotificationsProvider({
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const base = pageTitle("Поддержка");
+    const base = pageTitle("Админ");
     document.title = totalUnread > 0 ? `(${totalUnread}) ${base}` : base;
   }, [totalUnread]);
 
@@ -34,7 +34,7 @@ export function SupportNotificationsProvider({
     const delta = totalUnread - prevTotalRef.current;
     if (delta > 0) {
       try {
-        new Notification("Новые сообщения в заказах", {
+        new Notification("Новые сообщения", {
           body:
             delta === 1
               ? "1 непрочитанное сообщение от покупателя"

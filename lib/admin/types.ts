@@ -16,6 +16,14 @@ export type AdminUserRecord = {
   createdAt: string;
   ordersCount: number;
   paidTotal: number;
+  rbacAdmin: boolean;
+  rbacSupport: boolean;
+  telegramUserId: string | null;
+};
+
+export type AdminUserDetailRecord = AdminUserRecord & {
+  isCoreAdmin: boolean;
+  telegramLinked: boolean;
 };
 
 export type AdminPaymentRecord = {

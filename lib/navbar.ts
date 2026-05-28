@@ -3,7 +3,8 @@ import "server-only";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin/auth";
-import { isSupportEmail } from "@/lib/support/auth";
+import { getUserPermissionsById } from "@/lib/rbac";
+import { routes } from "@/lib/routes";
 import type { NavbarState } from "@/lib/navbar-types";
 
 export type { NavbarState, NavbarUser } from "@/lib/navbar-types";
@@ -27,6 +28,8 @@ export async function getNavbarState(): Promise<NavbarState> {
   }
 
   const { user } = session;
+  const permissions = await getUserPermissionsById(user.id, user.email);
+
   return {
     status: "authenticated",
     user: {
@@ -35,7 +38,12 @@ export async function getNavbarState(): Promise<NavbarState> {
       image: user.image ?? null,
       initials: getInitials(user.name, user.email),
     },
-    isAdmin: isAdminEmail(user.email),
-    isSupport: isSupportEmail(user.email),
+    isAdmin: permissions?.canAccessAdminPanel ?? isAdminEmail(user.email),
+    isSupport: permissions?.canAccessSupport ?? false,
+    adminPanelHref: permissions?.canAccessAdmin
+      ? routes.admin.home
+      : permissions?.canAccessSupport
+        ? routes.admin.support
+        : undefined,
   };
 }

@@ -23,7 +23,7 @@ export async function scheduleMessageEmailReminders(params: {
   if (params.messageAuthor === "seller") {
     recipients.push({ email: params.buyerEmail, viewer: "buyer" });
   } else {
-    for (const email of getSupportNotificationEmails()) {
+    for (const email of await getSupportNotificationEmails()) {
       recipients.push({ email, viewer: "seller" });
     }
   }

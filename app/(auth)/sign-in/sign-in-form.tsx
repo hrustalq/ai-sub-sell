@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
 import type { SocialProvider } from "@/lib/auth-providers";
+import { normalizeCallbackUrl } from "@/lib/routes";
 import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,12 +53,16 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
   const [magicLinkLoading, setMagicLinkLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
+  function getCallbackUrl(fallback = "/"): string {
+    return normalizeCallbackUrl(searchParams.get("callbackUrl") ?? fallback);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+    const callbackUrl = getCallbackUrl();
 
     const { error } = await authClient.signIn.email({
       email,
@@ -83,7 +88,7 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
     setError(null);
     setMagicLinkSent(false);
 
-    const callbackUrl = searchParams.get("callbackUrl") ?? "/user/payments";
+    const callbackUrl = getCallbackUrl("/user/payments");
 
     const { error: magicError } = await authClient.signIn.magicLink({
       email: email.trim(),
@@ -104,7 +109,7 @@ function SignInFormInner({ socialProviders }: SignInFormProps) {
     setSocialLoading(provider);
     setError(null);
 
-    const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+    const callbackUrl = getCallbackUrl();
 
     const { error: socialError } = await authClient.signIn.social({
       provider,

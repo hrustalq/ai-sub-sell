@@ -7,18 +7,25 @@ import { ru } from "date-fns/locale";
 import { type ColumnDef } from "@tanstack/react-table";
 import "@/app/admin/_components/table-column-meta";
 import type { AdminPaymentRecord } from "@/lib/admin/types";
+import { routes } from "@/lib/routes";
 import { formatPrice } from "@/lib/plans/client";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { Button } from "@/components/ui/button";
 import { VirtualDataTable } from "@/app/admin/_components/virtual-data-table";
 
-export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
+export function PaymentsTable({
+  data,
+  hideCustomer = false,
+}: {
+  data: AdminPaymentRecord[];
+  hideCustomer?: boolean;
+}) {
   const columns = useMemo<ColumnDef<AdminPaymentRecord, unknown>[]>(
     () => [
       {
         accessorKey: "planName",
         header: "Заказ",
-        meta: { width: "26%", align: "left" },
+        meta: { width: hideCustomer ? "34%" : "26%", align: "left" },
         cell: ({ row }) => (
           <div className="flex flex-col gap-0.5 py-1">
             <span className="font-medium leading-tight">{row.original.planName}</span>
@@ -26,23 +33,27 @@ export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
           </div>
         ),
       },
-      {
-        id: "customer",
-        header: "Клиент",
-        meta: { width: "28%", align: "left" },
-        cell: ({ row }) => (
-          <div className="hidden flex-col gap-0.5 text-sm sm:flex">
-            <span>{row.original.user?.name ?? "Гость"}</span>
-            <span className="text-muted-foreground">
-              {row.original.user?.email ?? row.original.buyerEmail}
-            </span>
-          </div>
-        ),
-      },
+      ...(hideCustomer
+        ? []
+        : [
+            {
+              id: "customer",
+              header: "Клиент",
+              meta: { width: "28%", align: "left" as const },
+              cell: ({ row }: { row: { original: AdminPaymentRecord } }) => (
+                <div className="hidden flex-col gap-0.5 text-sm sm:flex">
+                  <span>{row.original.user?.name ?? "Гость"}</span>
+                  <span className="text-muted-foreground">
+                    {row.original.user?.email ?? row.original.buyerEmail}
+                  </span>
+                </div>
+              ),
+            },
+          ]),
       {
         accessorKey: "amount",
         header: "Сумма",
-        meta: { width: "14%", align: "right", numeric: true },
+        meta: { width: hideCustomer ? "18%" : "14%", align: "right", numeric: true },
         cell: ({ row }) => (
           <span className="font-medium">
             {formatPrice(row.original.amount, row.original.currency)}
@@ -74,12 +85,12 @@ export function PaymentsTable({ data }: { data: AdminPaymentRecord[] }) {
         meta: { width: "12%", align: "right" },
         cell: ({ row }) => (
           <Button asChild variant="outline" size="sm">
-            <Link href={`/support/${row.original.id}`}>Открыть</Link>
+            <Link href={routes.admin.supportOrder(row.original.id)}>Открыть</Link>
           </Button>
         ),
       },
     ],
-    [],
+    [hideCustomer],
   );
 
   return (

@@ -5,34 +5,19 @@
 import "dotenv/config";
 import { createLogger, logError } from "../lib/logger-script";
 import { getSiteOrigin } from "../lib/site-url";
+import {
+  TELEGRAM_BOT_WEBHOOKS,
+  type TelegramBotWebhookConfig,
+} from "../lib/telegram/webhooks";
 
 const log = createLogger("telegram-check");
-
-type BotCheck = {
-  label: string;
-  tokenEnv: string;
-  webhookPath: string;
-};
-
-const BOTS: BotCheck[] = [
-  {
-    label: "sell",
-    tokenEnv: "TELEGRAM_SELL_BOT_TOKEN",
-    webhookPath: "/api/telegram/sell/webhook",
-  },
-  {
-    label: "support",
-    tokenEnv: "TELEGRAM_SUPPORT_BOT_TOKEN",
-    webhookPath: "/api/telegram/support/webhook",
-  },
-];
 
 async function telegramApi<T>(token: string, method: string): Promise<T> {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`);
   return res.json() as Promise<T>;
 }
 
-async function checkBot(bot: BotCheck): Promise<boolean> {
+async function checkBot(bot: TelegramBotWebhookConfig): Promise<boolean> {
   const token = process.env[bot.tokenEnv]?.trim();
   if (!token) {
     log.info({ label: bot.label, env: bot.tokenEnv }, "bot skipped — token not set");
@@ -86,7 +71,7 @@ async function checkBot(bot: BotCheck): Promise<boolean> {
   if (!info?.url) {
     log.warn(
       { label: bot.label },
-      "webhook not set (use pnpm telegram:webhooks or pnpm telegram:poll locally)",
+      "webhook not set (use pnpm telegram:webhooks, restart production server, or pnpm telegram:poll locally)",
     );
     ok = false;
   } else if (info.url !== expectedUrl) {
@@ -140,11 +125,11 @@ async function main() {
 
   if (supportToken && !supportIds) {
     log.warn(
-      "support bot token set but TELEGRAM_SUPPORT_USER_IDS is empty — nobody can use it",
+      "support bot token set but TELEGRAM_SUPPORT_USER_IDS is empty — link staff Telegram IDs in admin panel (Админ → Telegram)",
     );
   }
 
-  const results = await Promise.all(BOTS.map(checkBot));
+  const results = await Promise.all(TELEGRAM_BOT_WEBHOOKS.map(checkBot));
   if (!results.every(Boolean)) {
     process.exitCode = 1;
   }

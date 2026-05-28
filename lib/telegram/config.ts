@@ -22,7 +22,7 @@ export function getSupportTelegramUserIds(): string[] {
     .filter(Boolean);
 }
 
-export function isSupportTelegramUser(telegramUserId: string | number): boolean {
+export function isLegacySupportTelegramUser(telegramUserId: string | number): boolean {
   const ids = getSupportTelegramUserIds();
   if (ids.length === 0) return false;
   return ids.includes(String(telegramUserId));

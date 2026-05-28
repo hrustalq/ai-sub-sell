@@ -1,3 +1,4 @@
+import React, { type ReactNode } from "react";
 import {
   Body,
   Container,
@@ -59,7 +60,7 @@ export const emailStyles = {
 
 interface BaseEmailProps {
   preview: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function BaseEmail({ preview, children }: BaseEmailProps) {

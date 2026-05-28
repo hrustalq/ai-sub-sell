@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminPanel } from "@/lib/admin";
 import { noIndexMetadata } from "@/lib/seo";
-import { ADMIN_NAV_ITEMS } from "@/lib/admin/navigation";
+import { getAdminNavItems, getAdminPanelHomeHref } from "@/lib/rbac";
 import { AppShell } from "@/components/layout/app-shell";
+import { SupportNotificationsProvider } from "@/app/admin/_components/support-notifications-provider";
 
 export const metadata: Metadata = noIndexMetadata();
 
@@ -12,17 +13,25 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireAdmin();
+  const { session, permissions } = await requireAdminPanel();
+  const navItems = getAdminNavItems(permissions);
+  const homeHref = getAdminPanelHomeHref(permissions);
+
+  const content = permissions.canAccessSupport ? (
+    <SupportNotificationsProvider>{children}</SupportNotificationsProvider>
+  ) : (
+    children
+  );
 
   return (
     <AppShell
-      brand={{ href: "/admin", title: "Админ", accent: "." }}
-      navItems={ADMIN_NAV_ITEMS}
+      brand={{ href: homeHref, title: "Админ", accent: "." }}
+      navItems={navItems}
       userEmail={session.user.email}
       exitHref="/"
       exitLabel="На сайт"
     >
-      {children}
+      {content}
     </AppShell>
   );
 }

@@ -29,6 +29,18 @@ import {
   type SellBotState,
 } from "@/lib/telegram/session";
 import { orderWebUrl } from "@/lib/telegram/notify";
+import { catchBotErrors } from "@/lib/telegram/bots/catch";
+import {
+  confirmTelegramEmailVerification,
+  requestTelegramEmailVerification,
+  TELEGRAM_EMAIL_CODE_LENGTH,
+} from "@/lib/telegram/email-verification";
+import { isValidEmail } from "@/lib/orders/access";
+import {
+  ensureBuyerGeneralConversation,
+  getBuyerGeneralChatMessages,
+  postBuyerGeneralMessage,
+} from "@/lib/telegram/conversations";
 
 export function createSellBot(): Bot {
   const token = getSellBotToken();
@@ -37,6 +49,8 @@ export function createSellBot(): Bot {
   }
 
   const bot = new Bot(token);
+
+  catchBotErrors(bot, "sell");
 
   bot.use(async (ctx, next) => {
     if (ctx.from) {
@@ -55,7 +69,8 @@ export function createSellBot(): Bot {
         "",
         "/catalog — каталог",
         "/orders — мои заказы",
-        "/email — привязать email",
+        "/support — чат с поддержкой (без заказа)",
+        "/email — привязать email (с кодом из письма)",
         "/help — справка",
       ].join("\n"),
       { parse_mode: "HTML" },
@@ -68,7 +83,8 @@ export function createSellBot(): Bot {
         "<b>Команды</b>",
         "/catalog — выбрать тариф и оплатить",
         "/orders — список заказов",
-        "/email your@mail.com — сохранить email для оплаты",
+        "/support — общий чат с поддержкой (не привязан к заказу)",
+        "/email your@mail.com — привязать email (код придёт на почту)",
         "",
         "После оплаты доступ появится в заказе. Вопросы — в чате заказа.",
       ].join("\n"),
@@ -77,19 +93,19 @@ export function createSellBot(): Bot {
   });
 
   bot.command("email", async (ctx) => {
+    const telegramUserId = String(ctx.from!.id);
     const text = ctx.message?.text ?? "";
     const email = text.replace(/^\/email\s*/i, "").trim();
+
     if (!email) {
-      await ctx.reply("Укажите email: /email your@mail.com");
+      await setSessionState<SellBotState>(telegramUserId, "sell", {
+        step: "awaiting_email",
+      });
+      await ctx.reply("Введите email для привязки. Мы отправим код подтверждения на почту.");
       return;
     }
-    const { setTelegramAccountEmail } = await import("@/lib/telegram/accounts");
-    const result = await setTelegramAccountEmail(String(ctx.from!.id), email);
-    if (!result.ok) {
-      await ctx.reply(result.error);
-      return;
-    }
-    await ctx.reply(`✅ Email сохранён: ${email}`);
+
+    await beginEmailVerification(ctx, telegramUserId, email);
   });
 
   bot.command("catalog", async (ctx) => {
@@ -98,6 +114,10 @@ export function createSellBot(): Bot {
 
   bot.command("orders", async (ctx) => {
     await showOrders(ctx);
+  });
+
+  bot.command("support", async (ctx) => {
+    await enterGeneralSupportChat(ctx);
   });
 
   bot.callbackQuery(CB.backProviders(), async (ctx) => {
@@ -169,8 +189,10 @@ export function createSellBot(): Bot {
           `<b>${escapeHtml(plan.name)}</b>`,
           `Цена: ${formatPrice(plan.price, plan.currency)}`,
           "",
-          "Введите email для чека и доступа к заказу:",
-          "или сначала: /email your@mail.com",
+          "Введите email для чека и доступа к заказу.",
+          "Мы отправим код подтверждения на почту.",
+          "",
+          "Или привяжите заранее: /email your@mail.com",
         ].join("\n"),
         { parse_mode: "HTML" },
       );
@@ -226,31 +248,61 @@ export function createSellBot(): Bot {
   bot.on("message:text", async (ctx) => {
     const telegramUserId = String(ctx.from!.id);
     const state = await getSessionState<SellBotState>(telegramUserId, "sell");
+    const text = ctx.message.text.trim();
 
-    if (state.step === "awaiting_email" && state.planId) {
-      const email = ctx.message.text.trim();
-      const { setTelegramAccountEmail } = await import("@/lib/telegram/accounts");
-      const linked = await setTelegramAccountEmail(telegramUserId, email);
-      if (!linked.ok) {
-        await ctx.reply(linked.error);
+    if (state.step === "awaiting_email_code") {
+      const confirmed = await confirmTelegramEmailVerification(telegramUserId, text);
+      if (!confirmed.ok) {
+        await ctx.reply(confirmed.error);
         return;
       }
+
       await clearSessionState(telegramUserId, "sell");
-      const plans = await getPlans();
-      const plan = plans.find((p) => p.id === state.planId);
-      if (!plan) {
-        await ctx.reply("Тариф больше недоступен. /catalog");
+
+      if (state.planId) {
+        const plans = await getPlans();
+        const plan = plans.find((p) => p.id === state.planId);
+        if (!plan) {
+          await ctx.reply("Тариф больше недоступен. /catalog");
+          return;
+        }
+        await startCheckout(
+          ctx,
+          telegramUserId,
+          state.planId,
+          confirmed.email,
+          plan.name,
+          plan.price,
+          plan.currency,
+        );
         return;
       }
-      await startCheckout(
-        ctx,
+
+      await ctx.reply(`✅ Email подтверждён: ${confirmed.email}`);
+      return;
+    }
+
+    if (state.step === "awaiting_email") {
+      if (!isValidEmail(text)) {
+        await ctx.reply("Укажите корректный email или /email your@mail.com");
+        return;
+      }
+
+      await beginEmailVerification(ctx, telegramUserId, text, state.planId);
+      return;
+    }
+
+    if (state.step === "general_chat" && state.conversationId) {
+      const result = await postBuyerGeneralMessage(
         telegramUserId,
-        state.planId,
-        email,
-        plan.name,
-        plan.price,
-        plan.currency,
+        state.conversationId,
+        text,
       );
+      if (!result.ok) {
+        await ctx.reply(result.error);
+        return;
+      }
+      await ctx.reply("✅ Сообщение отправлено. Ответ придёт сюда.");
       return;
     }
 
@@ -266,6 +318,68 @@ export function createSellBot(): Bot {
   });
 
   return bot;
+}
+
+async function beginEmailVerification(
+  ctx: Context,
+  telegramUserId: string,
+  email: string,
+  planId?: string,
+) {
+  const result = await requestTelegramEmailVerification(telegramUserId, email);
+  if (!result.ok) {
+    const retryHint = result.retryAfterSeconds
+      ? ` Повторите через ${result.retryAfterSeconds} сек.`
+      : "";
+    await ctx.reply(`${result.error}.${retryHint}`);
+    return;
+  }
+
+  await setSessionState<SellBotState>(telegramUserId, "sell", {
+    step: "awaiting_email_code",
+    pendingEmail: result.email,
+    planId,
+  });
+
+  await ctx.reply(
+    [
+      `📧 Код подтверждения отправлен на ${result.email}.`,
+      `Введите ${TELEGRAM_EMAIL_CODE_LENGTH}-значный код из письма.`,
+      "",
+      "Если письма нет, проверьте «Спам» или запросите код снова через минуту: /email",
+    ].join("\n"),
+  );
+}
+
+async function enterGeneralSupportChat(ctx: Context) {
+  const telegramUserId = String(ctx.from!.id);
+  const conversation = await ensureBuyerGeneralConversation(telegramUserId);
+
+  await setSessionState<SellBotState>(telegramUserId, "sell", {
+    step: "general_chat",
+    conversationId: conversation.id,
+  });
+
+  const messages = await getBuyerGeneralChatMessages(conversation.id);
+  const preview =
+    messages.length === 0
+      ? "Сообщений пока нет. Напишите вопрос — поддержка ответит здесь."
+      : messages
+          .slice(-8)
+          .map((m) => `${m.author === "seller" ? "🛟" : "👤"} ${truncate(m.body, 300)}`)
+          .join("\n\n");
+
+  await ctx.reply(
+    [
+      "💬 <b>Чат с поддержкой</b>",
+      "Это обращение не привязано к заказу.",
+      "",
+      escapeHtml(preview),
+      "",
+      "Напишите сообщение:",
+    ].join("\n"),
+    { parse_mode: "HTML" },
+  );
 }
 
 async function showCatalog(ctx: Context, edit = false) {

@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { ExternalLinkIcon, PackageIcon } from "lucide-react";
 import type { SupportOrderDetailRecord } from "@/lib/support/types";
+import { routes } from "@/lib/routes";
 import type { OrderMessageRecord } from "@/lib/orders/types";
 import { orderApiUrl } from "@/lib/orders/api-url";
 import { useOrder } from "@/lib/orders/hooks";
@@ -112,7 +113,7 @@ export function SupportOrderView({
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link href={`/orders/${order.id}`} target="_blank">
+              <Link href={routes.order(order.id)} target="_blank">
                 Страница покупателя
                 <ExternalLinkIcon className="size-3.5" />
               </Link>

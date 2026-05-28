@@ -6,6 +6,7 @@ import { ru } from "date-fns/locale";
 import db from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { getAppBaseUrl, orderPageUrl, signInMagicLinkUrl } from "@/lib/email/urls";
+import { routes } from "@/lib/routes";
 import { formatPrice } from "@/lib/plans/format";
 import { OrderPaidEmail } from "@/emails/order-paid";
 import { PaymentReceiptEmail } from "@/emails/payment-receipt";
@@ -89,8 +90,8 @@ export async function sendNewMessageEmail(params: {
 
   const orderUrl =
     params.recipientRole === "support"
-      ? `${getAppBaseUrl()}/support/${params.orderId}`
-      : signInMagicLinkUrl(`/orders/${params.orderId}`);
+      ? `${getAppBaseUrl()}${routes.admin.supportOrder(params.orderId)}`
+      : signInMagicLinkUrl(routes.order(params.orderId));
 
   await sendEmail({
     to: params.to,

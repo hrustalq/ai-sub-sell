@@ -9,6 +9,7 @@ export {
   formatDurationPeriod,
 } from "@/lib/plans/catalog";
 export { groupPlansByProvider, getDiscountPercent } from "@/lib/plans/grouping";
+export { getPricingCatalog } from "@/lib/plans/pricing-catalog";
 export {
   findProviderMeta,
   getProviderLabel,

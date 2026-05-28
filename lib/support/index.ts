@@ -1,4 +1,14 @@
-export { isSupportEmail, getSupportSession, requireSupport } from "@/lib/support/auth";
-export { SUPPORT_NAV_ITEMS } from "@/lib/support/navigation";
+export { getSupportSession, isSupportUser, requireSupport } from "@/lib/support/auth";
 export { getSupportOrders, getSupportOrder } from "@/lib/support/queries";
-export type { SupportOrderRecord, SupportOrderDetailRecord } from "@/lib/support/types";
+export {
+  getSupportConversations,
+  getSupportConversation,
+  getSupportConversationMessages,
+} from "@/lib/support/conversations";
+export type {
+  SupportOrderRecord,
+  SupportOrderDetailRecord,
+  SupportConversationRecord,
+  SupportConversationDetailRecord,
+  SupportConversationMessageRecord,
+} from "@/lib/support/types";

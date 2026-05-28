@@ -6,6 +6,7 @@ export type NavIconName =
   | "users"
   | "credit-card"
   | "message-square"
+  | "messages-square"
   | "headphones"
   | "user";
 

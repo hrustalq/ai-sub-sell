@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Plan, ProviderMeta } from "@/lib/plans/client";
+import { routes } from "@/lib/routes";
 import { DURATION_OPTIONS, formatDurationPeriod } from "@/lib/plans/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,7 +192,7 @@ export function PlanForm({ mode, plan, providers }: PlanFormProps) {
         throw new Error(body.error ?? "Не удалось сохранить тариф");
       }
 
-      router.push("/admin/plans");
+      router.push(routes.admin.plans);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Что-то пошло не так");
@@ -475,7 +476,7 @@ export function PlanForm({ mode, plan, providers }: PlanFormProps) {
                   asChild
                   disabled={loading}
                 >
-                  <Link href="/admin/plans">Отмена</Link>
+                  <Link href={routes.admin.plans}>Отмена</Link>
                 </Button>
                 <Button
                   type="submit"

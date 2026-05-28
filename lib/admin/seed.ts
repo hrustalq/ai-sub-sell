@@ -46,7 +46,7 @@ export async function seedAdminUser(db: PrismaClient): Promise<void> {
 
     await db.user.update({
       where: { id: existing.id },
-      data: { name, emailVerified: true },
+      data: { name, emailVerified: true, rbacAdmin: true },
     });
 
     log.info({ email }, "admin user updated");
@@ -61,6 +61,7 @@ export async function seedAdminUser(db: PrismaClient): Promise<void> {
       name,
       email,
       emailVerified: true,
+      rbacAdmin: true,
     },
   });
 

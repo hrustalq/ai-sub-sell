@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "npx tsx prisma/seed.ts",
+    "seed:production": "bash deploy/seed.sh",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "telegram:poll": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",

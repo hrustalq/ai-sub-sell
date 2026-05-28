@@ -3,11 +3,8 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckIcon } from "lucide-react";
-import type { Plan, PricingProviderGroup, ProviderMeta } from "@/lib/plans/client";
-import {
-  groupPlansByProvider,
-  getDiscountPercent,
-} from "@/lib/plans/client";
+import type { PricingProviderGroup } from "@/lib/plans/client";
+import { getDiscountPercent } from "@/lib/plans/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AnimatedPrice } from "@/components/plans/animated-price";
@@ -84,7 +81,9 @@ function DurationSelector({
               "relative z-10 flex flex-col items-center justify-center rounded-md text-center outline-none",
               showDiscountRow ? "min-h-11 gap-0.5 py-1.5" : "min-h-9 py-2",
               count === 1 ? "min-w-22 px-4" : "min-w-0 flex-1 px-2",
-              isSelected ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+              isSelected
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {isSelected && (
@@ -144,7 +143,9 @@ function TierCard({
   const selected =
     tier.options.find((p) => p.id === selectedId) ?? defaultOption;
   const discount = getDiscountPercent(selected);
-  const promotionalBadge = isPromotionalBadge(selected.badge) ? selected.badge : null;
+  const promotionalBadge = isPromotionalBadge(selected.badge)
+    ? selected.badge
+    : null;
   const showCompare =
     selected.compareAtPrice !== null &&
     selected.compareAtPrice > selected.price;
@@ -194,7 +195,9 @@ function TierCard({
 
   const maxCompareAtPrice = useMemo(
     () =>
-      compareAtReserveValues.length > 0 ? Math.max(...compareAtReserveValues) : 0,
+      compareAtReserveValues.length > 0
+        ? Math.max(...compareAtReserveValues)
+        : 0,
     [compareAtReserveValues],
   );
 
@@ -221,9 +224,7 @@ function TierCard({
       <Card
         className={cn(
           "flex h-full flex-1 flex-col ring-2",
-          tier.highlight
-            ? "ring-primary shadow-xs"
-            : "ring-foreground/10",
+          tier.highlight ? "ring-primary shadow-xs" : "ring-foreground/10",
         )}
       >
         <CardHeader className="pb-0">
@@ -264,7 +265,9 @@ function TierCard({
               {showMetaRow ? (
                 <>
                   <AnimatedPrice
-                    value={showCompare ? selected.compareAtPrice! : maxCompareAtPrice}
+                    value={
+                      showCompare ? selected.compareAtPrice! : maxCompareAtPrice
+                    }
                     compareValue={
                       showCompare ? compareAtCompareValue : maxCompareAtPrice
                     }
@@ -337,13 +340,10 @@ function TierCard({
 }
 
 export function PricingSection({
-  plans,
-  providers,
+  catalog,
 }: {
-  plans: Plan[];
-  providers: ProviderMeta[];
+  catalog: PricingProviderGroup[];
 }) {
-  const catalog = useMemo(() => groupPlansByProvider(plans, providers), [plans, providers]);
   const defaultProvider = catalog[0]?.id ?? "codex";
 
   const reserveBadge = useMemo(() => {
@@ -352,7 +352,10 @@ export function PricingSection({
     for (const provider of catalog) {
       for (const tier of provider.tiers) {
         for (const option of tier.options) {
-          if (isPromotionalBadge(option.badge) && option.badge.length > widest.length) {
+          if (
+            isPromotionalBadge(option.badge) &&
+            option.badge.length > widest.length
+          ) {
             widest = option.badge;
           }
         }
@@ -383,7 +386,11 @@ export function PricingSection({
           const isSelected = activeProvider === provider.id;
 
           return (
-            <TabsPrimitive.Trigger key={provider.id} value={provider.id} asChild>
+            <TabsPrimitive.Trigger
+              key={provider.id}
+              value={provider.id}
+              asChild
+            >
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.97 }}

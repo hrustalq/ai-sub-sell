@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { hashPassword } from "better-auth/crypto";
 import type { PrismaClient } from "@/generated/prisma/client";
 import { createLogger } from "@/lib/logger-script";
+import { routes } from "@/lib/routes";
 
 const log = createLogger("seed");
 
@@ -339,8 +340,8 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
   log.info(
     {
       buyerEmail,
-      supportUrl: `${baseUrl}/support`,
-      needsReplyUrl: `${baseUrl}/support/${SEED_ORDER_IDS.needsReply}`,
+      supportUrl: `${baseUrl}${routes.admin.support}`,
+      needsReplyUrl: `${baseUrl}${routes.admin.supportOrder(SEED_ORDER_IDS.needsReply)}`,
       guestOrderLinks: guestLinks,
     },
     "demo orders seeded",

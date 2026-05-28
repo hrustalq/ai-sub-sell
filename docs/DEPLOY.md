@@ -210,6 +210,29 @@ Deploy will:
 
 It **does not** delete or replace `/var/lib/ai-sub-sell/data/`.
 
+### First-time seed (catalog + admin user)
+
+After the first deploy (or whenever you need to sync the default catalog / admin account), run as the deploy user:
+
+```bash
+sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/seed.sh
+```
+
+Or from the app directory:
+
+```bash
+cd /opt/ai-sub-sell/app
+pnpm seed:production
+```
+
+Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `CORE_ADMIN_EMAILS` in `/opt/ai-sub-sell/shared/.env` before seeding (see `deploy/env.production.example`).
+
+The script is safe to re-run: it upserts providers, plans, and the admin user. Demo buyer/orders are **skipped** by default (`SEED_SKIP_DEMO_ORDERS=1`). To include demo data (not recommended on production):
+
+```bash
+SEED_SKIP_DEMO_ORDERS=0 sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/seed.sh
+```
+
 ## 6. Database safety
 
 - Production DB path is configured only via `DATABASE_URL` in `shared/.env`.

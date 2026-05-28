@@ -1,5 +1,7 @@
 import "server-only";
 
+import db from "@/lib/db";
+
 function parseEmailList(raw: string): string[] {
   return raw
     .split(",")
@@ -7,12 +9,27 @@ function parseEmailList(raw: string): string[] {
     .filter(Boolean);
 }
 
-export function getSupportNotificationEmails(): string[] {
+export async function getSupportNotificationEmails(): Promise<string[]> {
   const support = parseEmailList(process.env.SUPPORT_EMAILS ?? "");
   const admin = parseEmailList(process.env.ADMIN_EMAILS ?? "");
-  const combined = [...new Set([...support, ...admin])];
+  const coreAdmin = parseEmailList(process.env.CORE_ADMIN_EMAILS ?? "");
 
-  if (combined.length > 0) return combined;
+  const rbacUsers = await db.user.findMany({
+    where: {
+      OR: [{ rbacSupport: true }, { rbacAdmin: true }],
+    },
+    select: { email: true },
+  });
+
+  const combined = [
+    ...support,
+    ...admin,
+    ...coreAdmin,
+    ...rbacUsers.map((user) => user.email.trim().toLowerCase()),
+  ];
+
+  const unique = [...new Set(combined)];
+  if (unique.length > 0) return unique;
 
   const fallback = process.env.SMTP_FROM_EMAIL?.trim().toLowerCase();
   return fallback ? [fallback] : [];

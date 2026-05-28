@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ExternalLinkIcon } from "lucide-react";
 import type { AppNavItemConfig, AppShellBrand } from "@/lib/navigation/types";
+import { getActiveNavHref } from "@/lib/navigation/active-nav";
 import { AppNavLink } from "@/components/layout/app-nav-link";
 import { resolveNavItems } from "@/components/layout/nav-icons";
 import { cn } from "@/lib/utils";
@@ -33,7 +35,9 @@ export function AppShell({
   exitLabel = "На сайт",
   children,
 }: AppShellProps) {
+  const pathname = usePathname();
   const resolvedNavItems = resolveNavItems(navItems);
+  const activeHref = getActiveNavHref(pathname, navItems);
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden bg-muted/30">
@@ -49,7 +53,12 @@ export function AppShell({
 
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {resolvedNavItems.map((item) => (
-            <AppNavLink key={item.href} item={item} variant="sidebar" />
+            <AppNavLink
+              key={item.href}
+              item={item}
+              variant="sidebar"
+              activeHref={activeHref}
+            />
           ))}
         </nav>
 
@@ -97,7 +106,12 @@ export function AppShell({
 
       <nav className="fixed inset-x-0 bottom-0 z-50 flex h-(--layout-app-mobile-nav-height) border-t border-border bg-background/95 backdrop-blur md:hidden">
         {resolvedNavItems.map((item) => (
-          <AppNavLink key={item.href} item={item} variant="bottom" />
+          <AppNavLink
+            key={item.href}
+            item={item}
+            variant="bottom"
+            activeHref={activeHref}
+          />
         ))}
       </nav>
     </div>

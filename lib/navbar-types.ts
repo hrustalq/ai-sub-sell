@@ -7,4 +7,10 @@ export type NavbarUser = {
 
 export type NavbarState =
   | { status: "guest" }
-  | { status: "authenticated"; user: NavbarUser; isAdmin: boolean; isSupport: boolean };
+  | {
+      status: "authenticated";
+      user: NavbarUser;
+      isAdmin: boolean;
+      isSupport: boolean;
+      adminPanelHref?: string;
+    };

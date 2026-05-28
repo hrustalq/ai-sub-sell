@@ -4,25 +4,14 @@ import db from "@/lib/db";
 import { SITE_NAME } from "@/lib/brand";
 import { formatPrice } from "@/lib/plans/format";
 import { absoluteUrl } from "@/lib/site-url";
+import { routes } from "@/lib/routes";
 import { sendTelegramMessage } from "@/lib/telegram/api";
 import {
   getSellBotToken,
   getSupportBotToken,
-  getSupportTelegramUserIds,
 } from "@/lib/telegram/config";
+import { getSupportStaffChatIds } from "@/lib/telegram/support-access";
 import { escapeHtml, formatOrderStatus, truncate } from "@/lib/telegram/format";
-
-async function getSupportStaffChatIds(): Promise<string[]> {
-  const ids = getSupportTelegramUserIds();
-  if (ids.length === 0) return [];
-
-  const accounts = await db.telegramAccount.findMany({
-    where: { telegramUserId: { in: ids } },
-    select: { chatId: true },
-  });
-
-  return accounts.map((a) => a.chatId);
-}
 
 export async function notifyBuyerOrderPaid(orderId: string): Promise<void> {
   const token = getSellBotToken();
@@ -230,7 +219,8 @@ export async function sendSellBotWelcome(chatId: string | number): Promise<void>
       "",
       "/catalog — каталог тарифов",
       "/orders — ваши заказы",
-      "/email — привязать email для оплаты",
+      "/support — чат с поддержкой (без заказа)",
+      "/email — привязать email (код придёт на почту)",
       "/help — справка",
     ].join("\n"),
     { parseMode: "HTML" },
@@ -238,5 +228,78 @@ export async function sendSellBotWelcome(chatId: string | number): Promise<void>
 }
 
 export function orderWebUrl(orderId: string): string {
-  return absoluteUrl(`/orders/${orderId}`);
+  return absoluteUrl(routes.order(orderId));
+}
+
+export function supportOrderWebUrl(orderId: string): string {
+  return absoluteUrl(routes.admin.supportOrder(orderId));
+}
+
+export function supportConversationWebUrl(conversationId: string): string {
+  return absoluteUrl(routes.admin.supportConversation(conversationId));
+}
+
+export async function notifySupportOfGeneralBuyerMessage(params: {
+  conversationId: string;
+  buyerEmail: string | null;
+  body: string;
+}): Promise<void> {
+  const token = getSupportBotToken();
+  if (!token) return;
+
+  const chatIds = await getSupportStaffChatIds();
+  if (chatIds.length === 0) return;
+
+  const text = [
+    `💬 <b>Новое обращение</b>`,
+    "",
+    `Чат: <code>${params.conversationId}</code>`,
+    params.buyerEmail ? `Email: ${escapeHtml(params.buyerEmail)}` : "Telegram-покупатель",
+    "",
+    truncate(escapeHtml(params.body), 500),
+    "",
+    `Ответить: /chat_${params.conversationId}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  await Promise.all(
+    chatIds.map((chatId) =>
+      sendTelegramMessage(token, chatId, text, { parseMode: "HTML" }),
+    ),
+  );
+}
+
+export async function notifyBuyerNewGeneralSellerMessage(params: {
+  conversationId: string;
+  body: string;
+}): Promise<void> {
+  const token = getSellBotToken();
+  if (!token) return;
+
+  const conversation = await db.supportConversation.findUnique({
+    where: { id: params.conversationId },
+    select: { buyerTelegramUserId: true },
+  });
+
+  if (!conversation?.buyerTelegramUserId) return;
+
+  const account = await db.telegramAccount.findUnique({
+    where: { telegramUserId: conversation.buyerTelegramUserId },
+    select: { chatId: true },
+  });
+  if (!account) return;
+
+  await sendTelegramMessage(
+    token,
+    account.chatId,
+    [
+      `🛟 <b>Ответ поддержки</b>`,
+      "",
+      truncate(escapeHtml(params.body), 3500),
+      "",
+      "Продолжить: /support",
+    ].join("\n"),
+    { parseMode: "HTML" },
+  );
 }

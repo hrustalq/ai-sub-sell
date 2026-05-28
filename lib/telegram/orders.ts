@@ -6,7 +6,8 @@ import { getOrderMessages } from "@/lib/orders/queries";
 import { createOrderMessage } from "@/lib/orders/messages";
 import { createLogger, logError } from "@/lib/logger";
 import { notifySupportNewTelegramOrder } from "@/lib/telegram/notify";
-import { setTelegramAccountEmail } from "@/lib/telegram/accounts";
+import { getTelegramAccount } from "@/lib/telegram/accounts";
+import { normalizeEmail } from "@/lib/users/placeholder";
 
 const log = createLogger("telegram-orders");
 
@@ -54,7 +55,14 @@ export async function createTelegramCheckout(params: {
   planId: string;
   email: string;
 }) {
-  await setTelegramAccountEmail(params.telegramUserId, params.email);
+  const normalizedEmail = normalizeEmail(params.email);
+  const account = await getTelegramAccount(params.telegramUserId);
+  if (!account?.email || account.email !== normalizedEmail) {
+    return {
+      ok: false as const,
+      error: "Сначала подтвердите email кодом из письма: /email your@mail.com",
+    };
+  }
 
   const result = await createCheckoutOrder({
     planId: params.planId,

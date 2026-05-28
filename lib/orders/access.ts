@@ -1,9 +1,9 @@
 import "server-only";
 
-import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { isSupportEmail } from "@/lib/support/auth";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { getUserPermissionsById } from "@/lib/rbac";
 import db from "@/lib/db";
 
 export function generateOrderAccessToken(): string {
@@ -43,15 +43,19 @@ export async function getOrderAccessContext(
 
   const session = await auth.api.getSession({ headers: await headers() });
   const sessionUserId = session?.user?.id ?? null;
-  const sessionEmail = session?.user?.email?.trim().toLowerCase() ?? null;
-  const isStaff = isSupportEmail(sessionEmail);
+  const sessionEmail = session?.user?.email ?? null;
+  const permissions =
+    sessionUserId && sessionEmail
+      ? await getUserPermissionsById(sessionUserId, sessionEmail)
+      : null;
+  const isStaff = permissions?.canAccessSupport ?? false;
 
   const hasValidToken = Boolean(token && tokensMatch(order.accessTokenHash, token));
   const isOwnerByUserId = Boolean(
     sessionUserId && order.userId && order.userId === sessionUserId,
   );
   const isOwnerByEmail = Boolean(
-    sessionEmail && order.buyerEmail.trim().toLowerCase() === sessionEmail,
+    sessionEmail && order.buyerEmail.trim().toLowerCase() === sessionEmail.trim().toLowerCase(),
   );
   const isOwner = isOwnerByUserId || isOwnerByEmail;
 

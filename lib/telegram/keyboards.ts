@@ -17,6 +17,9 @@ const CB = {
   supportOrders: (page: number) => `sop:${page}`,
   supportChat: (id: string) => `sc:${id}`,
   supportFulfill: (id: string) => `sf:${id}`,
+  supportGeneralChat: (id: string) => `sgc:${id}`,
+  supportGeneralChatReply: (id: string) => `sgcc:${id}`,
+  supportGeneralChats: (page: number) => `sgcl:${page}`,
 } as const;
 
 export { CB };
@@ -113,5 +116,36 @@ export function supportOrderActionsKeyboard(orderId: string): InlineKeyboardButt
     [{ text: "💬 Ответить", callback_data: CB.supportChat(orderId) }],
     [{ text: "📦 Выдать доступ", callback_data: CB.supportFulfill(orderId) }],
     [{ text: "← К списку", callback_data: CB.supportOrders(0) }],
+  ];
+}
+
+export function supportGeneralChatListKeyboard(
+  conversations: { id: string; buyerLabel: string; unreadCount: number }[],
+  page: number,
+  hasMore: boolean,
+): InlineKeyboardButton[][] {
+  const rows: InlineKeyboardButton[][] = conversations.map((conversation) => [
+    {
+      text: `${conversation.unreadCount > 0 ? "🔴 " : ""}${conversation.buyerLabel}`.slice(0, 60),
+      callback_data: CB.supportGeneralChat(conversation.id),
+    },
+  ]);
+
+  const nav: InlineKeyboardButton[] = [];
+  if (page > 0) {
+    nav.push({ text: "← Ранее", callback_data: CB.supportGeneralChats(page - 1) });
+  }
+  if (hasMore) {
+    nav.push({ text: "Далее →", callback_data: CB.supportGeneralChats(page + 1) });
+  }
+  if (nav.length) rows.push(nav);
+
+  return rows;
+}
+
+export function supportGeneralChatActionsKeyboard(conversationId: string): InlineKeyboardButton[][] {
+  return [
+    [{ text: "💬 Ответить", callback_data: CB.supportGeneralChatReply(conversationId) }],
+    [{ text: "← К обращениям", callback_data: CB.supportGeneralChats(0) }],
   ];
 }

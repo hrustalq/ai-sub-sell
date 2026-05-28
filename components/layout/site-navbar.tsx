@@ -31,6 +31,7 @@ export async function SiteNavbar() {
               user={state.user}
               isAdmin={state.isAdmin}
               isSupport={state.isSupport}
+              adminPanelHref={state.adminPanelHref}
             />
           )}
         </div>

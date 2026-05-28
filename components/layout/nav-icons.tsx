@@ -6,6 +6,7 @@ import {
   UsersIcon,
   CreditCardIcon,
   MessageSquareIcon,
+  MessagesSquareIcon,
   HeadphonesIcon,
   UserIcon,
   type LucideIcon,
@@ -18,6 +19,7 @@ export const NAV_ICONS: Record<NavIconName, LucideIcon> = {
   users: UsersIcon,
   "credit-card": CreditCardIcon,
   "message-square": MessageSquareIcon,
+  "messages-square": MessagesSquareIcon,
   headphones: HeadphonesIcon,
   user: UserIcon,
 };

@@ -65,7 +65,12 @@ async function main() {
   log.info({ providers: providers.length, plans: defaults.length }, "catalog synced");
 
   await seedAdminUser(db);
-  await seedDemoOrders(db);
+
+  if (process.env.SEED_SKIP_DEMO_ORDERS === "1") {
+    log.info("skipping demo orders (SEED_SKIP_DEMO_ORDERS=1)");
+  } else {
+    await seedDemoOrders(db);
+  }
 }
 
 main()

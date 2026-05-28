@@ -1,10 +1,12 @@
 import { getAdminPayments } from "@/lib/admin/queries";
+import { requireAdmin } from "@/lib/admin";
 import type { AdminPaymentRecord } from "@/lib/admin/types";
 import { AdminPageShell } from "@/app/admin/_components/admin-page-shell";
 import { ExportExcelButton } from "@/app/admin/_components/export-excel-button";
 import { PaymentsTable } from "@/app/admin/_components/payments-table";
 
 export default async function AdminPaymentsPage() {
+  await requireAdmin();
   const payments = await getAdminPayments();
 
   const data: AdminPaymentRecord[] = payments.map((payment) => ({

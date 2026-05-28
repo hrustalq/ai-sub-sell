@@ -4,14 +4,23 @@ import db from "@/lib/db";
 import type { TelegramBotKind } from "@/lib/telegram/config";
 
 export type SellBotState = {
-  step?: "idle" | "awaiting_email" | "order_chat" | "awaiting_fulfillment";
+  step?:
+    | "idle"
+    | "awaiting_email"
+    | "awaiting_email_code"
+    | "order_chat"
+    | "general_chat"
+    | "awaiting_fulfillment";
   planId?: string;
   orderId?: string;
+  conversationId?: string;
+  pendingEmail?: string;
 };
 
 export type SupportBotState = {
-  step?: "idle" | "order_chat" | "awaiting_fulfillment";
+  step?: "idle" | "order_chat" | "general_chat" | "awaiting_fulfillment";
   orderId?: string;
+  conversationId?: string;
 };
 
 export async function getSessionState<T extends Record<string, unknown>>(

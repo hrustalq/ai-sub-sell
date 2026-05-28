@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/brand";
 import { buildHomeJsonLd } from "@/lib/seo-structured-data";
 import { ZapIcon, LayersIcon, PercentIcon } from "lucide-react";
 import { getNavbarState } from "@/lib/navbar";
-import { getPlans, getActiveProviders, seedPlansIfEmpty } from "@/lib/plans";
-import { PricingSection } from "@/components/plans/pricing-section";
+import { getActiveProviders } from "@/lib/plans";
+import { PricingIsland } from "@/components/plans/pricing-island";
+import { PricingSectionSkeleton } from "@/components/plans/pricing-section-skeleton";
 import { HowItWorksSection } from "@/components/home/how-it-works-section";
 import { ProviderScrambleHero } from "@/components/hero/provider-scramble-hero";
 import { Button } from "@/components/ui/button";
@@ -112,10 +114,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const navbar = await getNavbarState();
-  await seedPlansIfEmpty();
-  const [plans, providers] = await Promise.all([
-    getPlans(),
+  const [navbar, providers] = await Promise.all([
+    getNavbarState(),
     getActiveProviders(),
   ]);
 
@@ -156,7 +156,9 @@ export default async function Home() {
                 рассчитывается автоматически
               </p>
             </div>
-            <PricingSection plans={plans} providers={providers} />
+            <Suspense fallback={<PricingSectionSkeleton />}>
+              <PricingIsland />
+            </Suspense>
           </div>
         </section>
 

@@ -6,6 +6,7 @@ import { PencilIcon } from "lucide-react";
 import { type ColumnDef } from "@tanstack/react-table";
 import "@/app/admin/_components/table-column-meta";
 import type { AdminPlanRecord } from "@/lib/admin/types";
+import { routes } from "@/lib/routes";
 import { formatPrice } from "@/lib/plans/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,7 @@ export function usePlanTableColumns() {
           <div className="flex justify-end gap-1">
             <Button variant="ghost" size="icon-sm" asChild>
               <Link
-                href={`/admin/plans/${row.original.id}/edit`}
+                href={routes.admin.planEdit(row.original.id)}
                 aria-label={`Редактировать ${row.original.name}`}
               >
                 <PencilIcon className="size-4" />

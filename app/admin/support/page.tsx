@@ -1,9 +1,11 @@
 import { getSupportOrders } from "@/lib/support/queries";
 import type { SupportOrderRecord } from "@/lib/support/types";
-import { PageShell } from "@/components/layout/page-shell";
-import { SupportOrdersTable } from "@/app/support/_components/support-orders-table";
+import { requireSupport } from "@/lib/admin";
+import { AdminPageShell } from "@/app/admin/_components/admin-page-shell";
+import { SupportOrdersTable } from "@/app/admin/_components/support-orders-table";
 
-export default async function SupportPage() {
+export default async function AdminSupportPage() {
+  await requireSupport();
   const orders = await getSupportOrders();
 
   const data: SupportOrderRecord[] = orders.map((order) => ({
@@ -25,8 +27,8 @@ export default async function SupportPage() {
   }));
 
   return (
-    <PageShell fill title="Заказы" description="Переписка и статусы заказов покупателей">
+    <AdminPageShell fill title="Заказы" description="Переписка и статусы заказов покупателей">
       <SupportOrdersTable data={data} />
-    </PageShell>
+    </AdminPageShell>
   );
 }

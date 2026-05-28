@@ -8,10 +8,10 @@ import {
   UserIcon,
   TagIcon,
   CreditCardIcon,
-  HeadphonesIcon,
 } from "lucide-react";
 import { useUnreadSummary } from "@/lib/orders/hooks";
 import type { NavbarUser } from "@/lib/navbar-types";
+import { routes } from "@/lib/routes";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,9 +29,15 @@ type UserNavMenuProps = {
   user: NavbarUser;
   isAdmin: boolean;
   isSupport?: boolean;
+  adminPanelHref?: string;
 };
 
-export function UserNavMenu({ user, isAdmin, isSupport = false }: UserNavMenuProps) {
+export function UserNavMenu({
+  user,
+  isAdmin,
+  isSupport = false,
+  adminPanelHref = routes.admin.home,
+}: UserNavMenuProps) {
   const router = useRouter();
   const { totalUnread: buyerUnread } = useUnreadSummary({ viewer: "buyer" });
   const { totalUnread: supportUnread } = useUnreadSummary({
@@ -95,26 +101,18 @@ export function UserNavMenu({ user, isAdmin, isSupport = false }: UserNavMenuPro
               Тарифы
             </Link>
           </DropdownMenuItem>
-          {isSupport && (
+          {isAdmin && (
             <DropdownMenuItem asChild>
-              <Link href="/support" className="flex w-full items-center justify-between">
+              <Link href={adminPanelHref} className="flex w-full items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <HeadphonesIcon />
-                  Поддержка
+                  <LayoutDashboardIcon />
+                  Админ-панель
                 </span>
-                {supportUnread > 0 && (
+                {isSupport && supportUnread > 0 && (
                   <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
                     {supportUnread}
                   </span>
                 )}
-              </Link>
-            </DropdownMenuItem>
-          )}
-          {isAdmin && (
-            <DropdownMenuItem asChild>
-              <Link href="/admin">
-                <LayoutDashboardIcon />
-                Админ-панель
               </Link>
             </DropdownMenuItem>
           )}

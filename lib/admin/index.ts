@@ -1,7 +1,21 @@
 import "server-only";
 
-export { isAdminEmail, getAdminSession, requireAdmin } from "@/lib/admin/auth";
-export { requireAdminApi } from "@/lib/admin/api";
+export {
+  isAdminEmail,
+  getAdminSession,
+  requireAdmin,
+  requireAdminPanel,
+  requireSupport,
+  requireCoreAdmin,
+  getAdminPanelSession,
+  type AdminPanelSession,
+} from "@/lib/admin/auth";
+export {
+  requireAdminApi,
+  requireAdminPanelApi,
+  requireSupportApi,
+  requireCoreAdminApi,
+} from "@/lib/admin/api";
 export {
   seedAdminUser,
   getAdminSeedConfig,
@@ -12,6 +26,8 @@ export {
 export {
   getAdminStats,
   getAdminUsers,
+  getAdminUserById,
+  getAdminUserPayments,
   getAdminPayments,
   getAdminActivityLog,
   type AdminStats,
@@ -21,6 +37,7 @@ export {
 export type {
   AdminStatsSnapshot,
   AdminUserRecord,
+  AdminUserDetailRecord,
   AdminPaymentRecord,
   AdminPlanRecord,
   AdminPlansProviderGroup,
