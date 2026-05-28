@@ -2,7 +2,7 @@
  * Register Telegram webhooks for sell and support bots.
  * Usage: pnpm telegram:webhooks
  */
-import "dotenv/config";
+import "./load-env";
 import { createLogger, logError } from "../lib/logger-script";
 import { runTelegramCommandRegistration } from "../lib/telegram/commands";
 import { ensureTelegramWebhooks } from "../lib/telegram/webhooks";

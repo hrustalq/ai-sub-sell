@@ -2,7 +2,7 @@
  * Local dev: long-polling for both bots (no public HTTPS required).
  * Usage: pnpm telegram:poll
  */
-import "dotenv/config";
+import "./load-env";
 import { createLogger, logError } from "../lib/logger-script";
 import { runTelegramCommandRegistration } from "../lib/telegram/commands";
 import { createSellBot } from "../lib/telegram/bots/sell";

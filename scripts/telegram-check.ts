@@ -2,7 +2,7 @@
  * Verify Telegram bot tokens, webhook URLs, and env configuration.
  * Usage: pnpm telegram:check
  */
-import "dotenv/config";
+import "./load-env";
 import { createLogger, logError } from "../lib/logger-script";
 import { getSiteOrigin } from "../lib/site-url";
 import {

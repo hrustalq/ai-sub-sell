@@ -59,7 +59,11 @@ In production, the app registers Telegram webhooks automatically on server start
 
 You can still register manually:
 
+On the VPS, run from `/opt/ai-sub-sell/app`. Scripts load env from `../shared/.env` automatically (same as systemd). You can also set `ENV_FILE=/path/to/.env`.
+
 ```bash
+cd /opt/ai-sub-sell/app
+pnpm telegram:check
 pnpm telegram:webhooks
 ```
 
