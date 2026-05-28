@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 import { SITE_NAME } from "./brand";
 
 const transporter = nodemailer.createTransport({

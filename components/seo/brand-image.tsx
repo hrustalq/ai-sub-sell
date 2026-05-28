@@ -1,4 +1,5 @@
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/brand";
+import { themeColors } from "@/lib/theme-colors";
 
 type BrandImageProps = {
   width: number;
@@ -16,8 +17,8 @@ export function BrandImage({ width, height, compact = false }: BrandImageProps) 
         flexDirection: "column",
         alignItems: compact ? "center" : "flex-start",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)",
-        color: "#fafafa",
+        background: `linear-gradient(135deg, ${themeColors.foreground} 0%, ${themeColors.primary} 100%)`,
+        color: themeColors.primaryForeground,
         padding: compact ? 0 : Math.round(width * 0.08),
         fontFamily:
           'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
@@ -34,7 +35,7 @@ export function BrandImage({ width, height, compact = false }: BrandImageProps) 
         }}
       >
         <span>ai-</span>
-        <span style={{ color: "#a3a3a3" }}>sub</span>
+        <span style={{ color: themeColors.ring }}>sub</span>
       </div>
       {!compact ? (
         <p
@@ -43,7 +44,7 @@ export function BrandImage({ width, height, compact = false }: BrandImageProps) 
             maxWidth: "88%",
             fontSize: Math.round(height * 0.055),
             lineHeight: 1.35,
-            color: "#d4d4d4",
+            color: themeColors.chart1,
             fontWeight: 400,
           }}
         >
@@ -55,7 +56,7 @@ export function BrandImage({ width, height, compact = false }: BrandImageProps) 
           style={{
             marginTop: "auto",
             fontSize: Math.round(height * 0.04),
-            color: "#737373",
+            color: themeColors.mutedForeground,
           }}
         >
           {SITE_NAME}

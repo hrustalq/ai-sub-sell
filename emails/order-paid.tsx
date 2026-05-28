@@ -1,5 +1,6 @@
-import { Button, Hr, Text } from "@react-email/components";
+import { Button, Hr, Text } from "react-email";
 
+import { themeColors } from "@/lib/theme-colors";
 import { BaseEmail, emailStyles } from "./_base";
 
 interface OrderPaidEmailProps {
@@ -38,7 +39,10 @@ export function OrderPaidEmail({
       <Hr style={emailStyles.hr} />
 
       <Text style={emailStyles.paragraph}>
-        <a href={signInUrl} style={{ color: "#111", textDecoration: "underline" }}>
+        <a
+          href={signInUrl}
+          style={{ color: themeColors.primary, textDecoration: "underline" }}
+        >
           Войти по ссылке на email
         </a>{" "}
         (без пароля)

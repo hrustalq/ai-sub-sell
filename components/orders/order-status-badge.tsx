@@ -16,7 +16,7 @@ export function OrderStatusBadge({
       variant="secondary"
       className={cn(
         status === "PAID" && "bg-primary/15 text-primary",
-        status === "PENDING" && "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+        status === "PENDING" && "bg-secondary text-secondary-foreground",
         status === "CANCELED" && "bg-muted text-muted-foreground",
         className,
       )}

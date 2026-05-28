@@ -1,4 +1,4 @@
-import { Button, Hr, Text } from "@react-email/components";
+import { Button, Hr, Text } from "react-email";
 
 import { SITE_NAME } from "@/lib/brand";
 import { BaseEmail, emailStyles } from "./_base";

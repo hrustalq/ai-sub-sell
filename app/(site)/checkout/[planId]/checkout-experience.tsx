@@ -159,25 +159,24 @@ export function CheckoutExperience({
 
   return (
     <div className="grid min-h-[calc(100dvh-3.5rem)] lg:grid-cols-2">
-      {/* Order summary — Stripe-style dark panel */}
-      <aside className="relative flex flex-col bg-zinc-950 px-6 py-10 text-zinc-50 sm:px-10 lg:px-14 lg:py-14">
+      <aside className="relative flex flex-col bg-primary px-6 py-10 text-primary-foreground sm:px-10 lg:px-14 lg:py-14">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
           <Link
             href="/#pricing"
-            className="mb-10 text-sm text-zinc-400 transition-colors hover:text-zinc-100"
+            className="mb-10 text-sm text-primary-foreground/60 transition-colors hover:text-primary-foreground"
           >
             ← Назад к тарифам
           </Link>
 
           <div className="flex flex-1 flex-col justify-center gap-8">
             <div>
-              <p className="text-sm font-medium uppercase tracking-wider text-zinc-400">
+              <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/60">
                 {getProviderLabel(selected.provider, providers)}
               </p>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                 {selected.tierLabel}
               </h1>
-              <p className="mt-1 text-zinc-400">{selected.period}</p>
+              <p className="mt-1 text-primary-foreground/60">{selected.period}</p>
             </div>
 
             <div>
@@ -186,34 +185,34 @@ export function CheckoutExperience({
                   {formatPrice(selected.price, selected.currency)}
                 </span>
                 {selected.compareAtPrice && selected.compareAtPrice > selected.price && (
-                  <span className="mb-1 text-lg text-zinc-500 line-through">
+                  <span className="mb-1 text-lg text-primary-foreground/50 line-through">
                     {formatPrice(selected.compareAtPrice, selected.currency)}
                   </span>
                 )}
               </div>
               {discount !== null && discount > 0 && (
-                <p className="mt-2 text-sm text-emerald-400">Экономия {discount}%</p>
+                <p className="mt-2 text-sm text-primary-foreground/90">Экономия {discount}%</p>
               )}
             </div>
 
             <ul className="flex flex-col gap-2.5">
               {selected.limits.map((limit) => (
-                <li key={limit} className="flex items-center gap-2.5 text-sm text-zinc-300">
-                  <CheckIcon className="size-4 shrink-0 text-emerald-400" />
+                <li key={limit} className="flex items-center gap-2.5 text-sm text-primary-foreground/80">
+                  <CheckIcon className="size-4 shrink-0 text-primary-foreground/90" />
                   {limit}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="mt-10 border-t border-zinc-800 pt-6">
+          <div className="mt-10 border-t border-primary-foreground/15 pt-6">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-400">К оплате</span>
+              <span className="text-primary-foreground/60">К оплате</span>
               <span className="text-xl font-semibold tabular-nums">
                 {formatPrice(selected.price, selected.currency)}
               </span>
             </div>
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mt-2 text-xs text-primary-foreground/50">
               Налоги и комиссии включены в стоимость
             </p>
           </div>

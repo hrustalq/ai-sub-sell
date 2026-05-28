@@ -19,13 +19,13 @@ function LogIcon({ type }: { type: AdminLogEntry["type"] }) {
   const className = "size-4 shrink-0";
   switch (type) {
     case "user_registered":
-      return <UserPlusIcon className={cn(className, "text-blue-500")} />;
+      return <UserPlusIcon className={cn(className, "text-primary")} />;
     case "order_paid":
       return <CheckCircle2Icon className={cn(className, "text-primary")} />;
     case "order_canceled":
       return <XCircleIcon className={cn(className, "text-muted-foreground")} />;
     default:
-      return <CreditCardIcon className={cn(className, "text-amber-600")} />;
+      return <CreditCardIcon className={cn(className, "text-muted-foreground")} />;
   }
 }
 

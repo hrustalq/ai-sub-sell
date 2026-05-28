@@ -128,3 +128,13 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .bg-radial-primary-glow {
+    background-image: radial-gradient(
+      ellipse at center,
+      color-mix(in oklch, var(--primary) 8%, transparent),
+      transparent 70%
+    );
+  }
+}

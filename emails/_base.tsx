@@ -6,13 +6,14 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
+} from "react-email";
 
 import { SITE_NAME } from "@/lib/brand";
+import { themeColors } from "@/lib/theme-colors";
 
 export const emailStyles = {
   main: {
-    backgroundColor: "#f6f6f6",
+    backgroundColor: themeColors.muted,
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
   },
@@ -23,30 +24,30 @@ export const emailStyles = {
   },
   box: {
     padding: "24px",
-    backgroundColor: "#ffffff",
+    backgroundColor: themeColors.card,
     borderRadius: "8px",
-    border: "1px solid #e4e4e4",
+    border: `1px solid ${themeColors.border}`,
   },
   hr: {
-    borderColor: "#e4e4e4",
+    borderColor: themeColors.border,
     margin: "24px 0",
   },
   paragraph: {
     margin: "0 0 16px",
     fontSize: "15px",
     lineHeight: "24px",
-    color: "#3c4149",
+    color: themeColors.foreground,
   },
   footer: {
     fontSize: "12px",
     lineHeight: "18px",
-    color: "#8898aa",
+    color: themeColors.mutedForeground,
     margin: "0",
   },
   button: {
-    backgroundColor: "#111111",
+    backgroundColor: themeColors.primary,
     borderRadius: "6px",
-    color: "#ffffff",
+    color: themeColors.primaryForeground,
     fontSize: "15px",
     fontWeight: "600",
     textDecoration: "none",
@@ -73,7 +74,7 @@ export function BaseEmail({ preview, children }: BaseEmailProps) {
               style={{
                 fontSize: "20px",
                 fontWeight: "700",
-                color: "#111",
+                color: themeColors.primary,
                 margin: 0,
               }}
             >

@@ -1,5 +1,6 @@
-import { Button, Text } from "@react-email/components";
+import { Button, Text } from "react-email";
 
+import { themeColors } from "@/lib/theme-colors";
 import { BaseEmail, emailStyles } from "./_base";
 
 interface NewMessageEmailProps {
@@ -30,7 +31,7 @@ export function NewMessageEmail({
         style={{
           ...emailStyles.paragraph,
           padding: "12px 16px",
-          backgroundColor: "#f3f4f6",
+          backgroundColor: themeColors.muted,
           borderRadius: "6px",
           fontStyle: "italic",
         }}

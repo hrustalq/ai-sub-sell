@@ -83,7 +83,7 @@ export function UserNavMenu({ user, isAdmin, isSupport = false }: UserNavMenuPro
                 Платежи
               </span>
               {buyerUnread > 0 && (
-                <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-white">
+                <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
                   {buyerUnread}
                 </span>
               )}
@@ -103,7 +103,7 @@ export function UserNavMenu({ user, isAdmin, isSupport = false }: UserNavMenuPro
                   Поддержка
                 </span>
                 {supportUnread > 0 && (
-                  <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
                     {supportUnread}
                   </span>
                 )}

@@ -169,8 +169,8 @@ export function OrderExperience({
           </CardHeader>
           <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             {order.status === "PENDING" && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
-                <p className="font-medium text-amber-900 dark:text-amber-100">
+              <div className="rounded-lg border border-ring/30 bg-secondary px-4 py-3 text-sm">
+                <p className="font-medium text-secondary-foreground">
                   Ожидаем подтверждение оплаты
                 </p>
                 <p className="mt-1 text-muted-foreground">
