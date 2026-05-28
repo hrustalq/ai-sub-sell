@@ -9,7 +9,10 @@ import {
 } from "@/lib/orders/access";
 import { resolveBuyerUserId } from "@/lib/users/placeholder";
 import { absoluteUrl } from "@/lib/site-url";
+import { createLogger, logError } from "@/lib/logger";
 import { createPayment } from "@/lib/yookassa";
+
+const log = createLogger("checkout");
 
 export type CreateOrderInput = {
   planId: string;
@@ -79,7 +82,8 @@ export async function createCheckoutOrder(
       returnUrl: orderUrl,
       customerEmail: buyerEmail,
     });
-  } catch {
+  } catch (err) {
+    logError(log, "YooKassa payment creation failed", err, { orderId, planId: plan.id });
     await db.order.update({ where: { id: orderId }, data: { status: "CANCELED" } });
     return { ok: false, error: "Payment gateway error", status: 502 };
   }

@@ -3,9 +3,12 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../generated/prisma/client";
 import { seedAdminUser } from "@/lib/admin/seed";
 import { getSqliteDatabaseUrl } from "@/lib/database-url";
+import { createLogger, logError } from "@/lib/logger-script";
 import { seedDemoOrders } from "@/lib/orders/seed";
 import { buildDefaultPlans } from "@/lib/plans/catalog";
 import { LEGACY_PLAN_IDS, planToDbRecord } from "@/lib/plans/seed";
+
+const log = createLogger("seed");
 
 const adapter = new PrismaBetterSqlite3({ url: getSqliteDatabaseUrl() });
 const db = new PrismaClient({ adapter });
@@ -26,7 +29,7 @@ async function main() {
     data: { active: false },
   });
 
-  console.log(`Синхронизировано тарифов: ${defaults.length}`);
+  log.info({ count: defaults.length }, "plans synced");
 
   await seedAdminUser(db);
   await seedDemoOrders(db);
@@ -34,7 +37,7 @@ async function main() {
 
 main()
   .catch((err) => {
-    console.error(err);
+    logError(log, "seed failed", err);
     process.exit(1);
   })
   .finally(() => db.$disconnect());

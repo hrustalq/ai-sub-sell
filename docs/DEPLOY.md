@@ -198,10 +198,47 @@ It **does not** delete or replace `/var/lib/ai-sub-sell/data/`.
 - Each deploy copies a timestamped backup before migrations.
 - Do not run `git clean -fdx` on paths containing production data.
 
-## 7. Troubleshooting
+## 7. Logs
+
+The app logs structured JSON to stdout; systemd captures it in the journal (`SyslogIdentifier=ai-sub-sell`).
+
+On the VPS, from the app directory:
+
+```bash
+cd /opt/ai-sub-sell/app
+pnpm logs              # follow live logs
+pnpm logs:tail         # last 200 lines
+pnpm logs:errors       # errors in the last 24h
+pnpm logs:since "2 hours ago"
+pnpm logs:json         # follow as JSON (for jq)
+pnpm logs:status       # systemd unit status
+```
+
+Equivalent without pnpm:
 
 ```bash
 sudo journalctl -u ai-sub-sell -f
+sudo journalctl -u ai-sub-sell -p err..alert --since "24 hours ago"
+```
+
+Filter by module (checkout, webhook, telegram, prisma, …):
+
+```bash
+sudo journalctl -u ai-sub-sell -f | grep '"module":"webhook"'
+```
+
+Env (in `shared/.env`):
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `LOG_LEVEL` | `info` (prod), `debug` (dev) | Minimum log level |
+| `LOG_PRETTY` | `false` in prod | Human-readable dev output |
+| `LOG_PRISMA_QUERIES` | `false` | Log every SQL query (verbose) |
+
+## 8. Troubleshooting
+
+```bash
+pnpm logs:errors
 sudo nginx -t && sudo systemctl status nginx
 ./deploy/check-deps.sh
 free -h && swapon --show

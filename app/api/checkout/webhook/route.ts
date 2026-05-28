@@ -7,7 +7,10 @@ import {
   sendOrderPaidEmail,
   sendPaymentReceiptEmail,
 } from "@/lib/orders/emails";
+import { createLogger, logError } from "@/lib/logger";
 import { scheduleMessageEmailReminders } from "@/lib/orders/message-reminders";
+
+const log = createLogger("webhook");
 
 export async function POST(req: Request) {
   let event: {
@@ -22,6 +25,8 @@ export async function POST(req: Request) {
 
   const orderId = event.object?.metadata?.orderId;
   if (!orderId) return new Response(null, { status: 200 });
+
+  log.info({ orderId, event: event.event, paymentId: event.object.id }, "payment webhook");
 
   if (event.event === "payment.succeeded") {
     const accessToken = generateOrderAccessToken();
@@ -71,7 +76,7 @@ export async function POST(req: Request) {
             buyerEmail: updated.buyerEmail,
             planName: updated.planName,
           }).catch((err) =>
-            console.error("[webhook] schedule welcome reminder failed", err),
+            logError(log, "schedule welcome reminder failed", err, { orderId }),
           );
         }
       }
@@ -79,18 +84,18 @@ export async function POST(req: Request) {
       try {
         await sendPaymentReceiptEmail(updated);
       } catch (err) {
-        console.error("[webhook] receipt email failed", orderId, err);
+        logError(log, "receipt email failed", err, { orderId });
       }
 
       try {
         await sendOrderPaidEmail(updated, accessToken);
       } catch (err) {
-        console.error("[webhook] paid email failed", orderId, err);
+        logError(log, "paid email failed", err, { orderId });
       }
 
       const { notifyBuyerOrderPaid } = await import("@/lib/telegram/notify");
       await notifyBuyerOrderPaid(orderId).catch((err) =>
-        console.error("[webhook] telegram notify failed", orderId, err),
+        logError(log, "telegram notify failed", err, { orderId }),
       );
     }
   } else if (event.event === "payment.canceled") {

@@ -1,6 +1,9 @@
 import { createHash } from "crypto";
 import { hashPassword } from "better-auth/crypto";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { createLogger } from "@/lib/logger-script";
+
+const log = createLogger("seed");
 
 export const SEED_ORDER_IDS = {
   needsReply: "seed-order-needs-reply",
@@ -131,7 +134,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
   });
 
   if (!plan) {
-    console.log("Пропуск seed заказов: нет активных тарифов");
+    log.info("skipping demo orders seed: no active plans");
     return;
   }
 
@@ -326,13 +329,20 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
     ],
   });
 
-  console.log("Демо-заказы созданы:");
-  console.log(`  Покупатель (войти): ${buyerEmail} / ${getBuyerSeedConfig().password}`);
-  console.log(`  Поддержка: ${baseUrl}/support`);
-  console.log(`  Нужен ответ: ${baseUrl}/support/${SEED_ORDER_IDS.needsReply}`);
-  console.log("  Ссылки с токеном (без входа):");
-  for (const orderId of Object.values(SEED_ORDER_IDS)) {
-    const token = SEED_ORDER_ACCESS_TOKENS[orderId];
-    console.log(`    ${orderId}: ${seedOrderUrl(baseUrl, orderId, token)}`);
-  }
+  const guestLinks = Object.fromEntries(
+    Object.values(SEED_ORDER_IDS).map((orderId) => [
+      orderId,
+      seedOrderUrl(baseUrl, orderId, SEED_ORDER_ACCESS_TOKENS[orderId]),
+    ]),
+  );
+
+  log.info(
+    {
+      buyerEmail,
+      supportUrl: `${baseUrl}/support`,
+      needsReplyUrl: `${baseUrl}/support/${SEED_ORDER_IDS.needsReply}`,
+      guestOrderLinks: guestLinks,
+    },
+    "demo orders seeded",
+  );
 }

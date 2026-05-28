@@ -1,5 +1,8 @@
 import "server-only";
 
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("telegram");
 const TELEGRAM_API = "https://api.telegram.org";
 
 export async function sendTelegramMessage(
@@ -26,7 +29,7 @@ export async function sendTelegramMessage(
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
-    console.error("[telegram] sendMessage failed", res.status, err);
+    log.error({ status: res.status, response: err, chatId }, "sendMessage failed");
     return false;
   }
   return true;

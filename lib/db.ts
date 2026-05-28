@@ -3,26 +3,35 @@ import "server-only";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../generated/prisma/client";
 import { getSqliteDatabaseUrl } from "./database-url";
-import logger from "./logger";
+import { createLogger } from "./logger";
+import { prismaQueryLoggingEnabled } from "./logger/core";
+
+const log = createLogger("prisma");
 
 const adapter = new PrismaBetterSqlite3({ url: getSqliteDatabaseUrl() });
 
-const db = new PrismaClient({ adapter, log: ['query', 'info', 'warn', 'error'] });
+const prismaLogLevels = prismaQueryLoggingEnabled()
+  ? (["query", "info", "warn", "error"] as const)
+  : (["warn", "error"] as const);
 
-db.$on('query', (event) => {
-  logger.info(event);
+const db = new PrismaClient({ adapter, log: [...prismaLogLevels] });
+
+db.$on("error", (event) => {
+  log.error(event, "prisma error");
 });
 
-db.$on('error', (event) => {
-  logger.error(event);
+db.$on("warn", (event) => {
+  log.warn(event, "prisma warn");
 });
 
-db.$on('info', (event) => {
-  logger.info(event);
-});
+if (prismaQueryLoggingEnabled()) {
+  db.$on("query", (event) => {
+    log.debug(event, "prisma query");
+  });
 
-db.$on('warn', (event) => {
-  logger.warn(event);
-});
+  db.$on("info", (event) => {
+    log.info(event, "prisma info");
+  });
+}
 
 export default db;

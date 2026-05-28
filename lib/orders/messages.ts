@@ -6,7 +6,10 @@ import {
   scheduleMessageEmailReminders,
 } from "@/lib/orders/message-reminders";
 import { markOrderMessagesRead } from "@/lib/orders/read-state";
+import { createLogger, logError } from "@/lib/logger";
 import { notifySupportOfBuyerMessage } from "@/lib/telegram/notify";
+
+const log = createLogger("messages");
 
 export type OrderMessageAuthor = "buyer" | "seller";
 
@@ -52,21 +55,25 @@ export async function createOrderMessage(params: {
     messageAuthor: params.author,
     buyerEmail: order.buyerEmail,
     planName: order.planName,
-  }).catch((err) => console.error("[messages] schedule reminder failed", err));
+  }).catch((err) => logError(log, "schedule reminder failed", err, { orderId: params.orderId }));
 
   if (params.author === "buyer") {
     await notifySupportOfBuyerMessage({
       orderId: params.orderId,
       planName: order.planName,
       body: trimmed,
-    }).catch((err) => console.error("[messages] telegram notify failed", err));
+    }).catch((err) =>
+      logError(log, "telegram support notify failed", err, { orderId: params.orderId }),
+    );
   } else {
     const { notifyBuyerNewSellerMessage } = await import("@/lib/telegram/notify");
     await notifyBuyerNewSellerMessage({
       orderId: params.orderId,
       planName: order.planName,
       body: trimmed,
-    }).catch((err) => console.error("[messages] telegram buyer notify failed", err));
+    }).catch((err) =>
+      logError(log, "telegram buyer notify failed", err, { orderId: params.orderId }),
+    );
   }
 
   return { ok: true as const, message };

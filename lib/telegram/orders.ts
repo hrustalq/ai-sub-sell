@@ -4,8 +4,11 @@ import db from "@/lib/db";
 import { createCheckoutOrder } from "@/lib/checkout/create-order";
 import { getOrderMessages } from "@/lib/orders/queries";
 import { createOrderMessage } from "@/lib/orders/messages";
+import { createLogger, logError } from "@/lib/logger";
 import { notifySupportNewTelegramOrder } from "@/lib/telegram/notify";
 import { setTelegramAccountEmail } from "@/lib/telegram/accounts";
+
+const log = createLogger("telegram-orders");
 
 export async function listBuyerTelegramOrders(telegramUserId: string) {
   return db.order.findMany({
@@ -61,7 +64,7 @@ export async function createTelegramCheckout(params: {
 
   if (result.ok) {
     await notifySupportNewTelegramOrder(result.orderId).catch((err) =>
-      console.error("[telegram] support notify failed", err),
+      logError(log, "support notify failed", err, { orderId: result.orderId }),
     );
   }
 

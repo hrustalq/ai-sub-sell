@@ -12,7 +12,14 @@
     "db:push": "prisma db push",
     "telegram:poll": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",
     "telegram:webhooks": "tsx scripts/telegram-set-webhooks.ts",
-    "telegram:check": "tsx scripts/telegram-check.ts"
+    "telegram:check": "tsx scripts/telegram-check.ts",
+    "logs": "bash scripts/logs.sh follow",
+    "logs:follow": "bash scripts/logs.sh follow",
+    "logs:tail": "bash scripts/logs.sh tail",
+    "logs:errors": "bash scripts/logs.sh errors",
+    "logs:since": "bash scripts/logs.sh since",
+    "logs:json": "bash scripts/logs.sh json",
+    "logs:status": "bash scripts/logs.sh status"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

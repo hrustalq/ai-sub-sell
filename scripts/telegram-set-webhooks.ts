@@ -3,8 +3,10 @@
  * Usage: pnpm telegram:webhooks
  */
 import "dotenv/config";
+import { createLogger, logError } from "../lib/logger-script";
 import { getSiteOrigin } from "../lib/site-url";
 
+const log = createLogger("telegram-webhooks");
 const secret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
 
 async function setWebhook(token: string, path: string, label: string) {
@@ -22,11 +24,11 @@ async function setWebhook(token: string, path: string, label: string) {
 
   const data = await res.json();
   if (!data.ok) {
-    console.error(`[${label}] failed:`, data);
+    log.error({ label, data }, "setWebhook failed");
     process.exitCode = 1;
     return;
   }
-  console.log(`[${label}] webhook → ${url}`);
+  log.info({ label, url }, "webhook registered");
 }
 
 async function main() {
@@ -34,7 +36,7 @@ async function main() {
   const support = process.env.TELEGRAM_SUPPORT_BOT_TOKEN?.trim();
 
   if (!sell && !support) {
-    console.error("Set TELEGRAM_SELL_BOT_TOKEN and/or TELEGRAM_SUPPORT_BOT_TOKEN");
+    log.error("Set TELEGRAM_SELL_BOT_TOKEN and/or TELEGRAM_SUPPORT_BOT_TOKEN");
     process.exit(1);
   }
 
@@ -47,6 +49,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  logError(log, "telegram webhooks setup failed", err);
   process.exit(1);
 });

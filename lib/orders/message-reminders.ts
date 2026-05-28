@@ -5,7 +5,9 @@ import { getSupportNotificationEmails } from "@/lib/email/support-recipients";
 import type { MessageViewer } from "@/lib/orders/read-state";
 import { getOrderUnreadCount } from "@/lib/orders/read-state";
 import { sendNewMessageEmail } from "@/lib/orders/emails";
+import { createLogger, logError } from "@/lib/logger";
 
+const log = createLogger("message-reminder");
 const REMINDER_DELAY_MS = 10 * 60 * 1000;
 
 export async function scheduleMessageEmailReminders(params: {
@@ -110,7 +112,7 @@ export async function processDueMessageEmailReminders(): Promise<{
       });
       sent += 1;
     } catch (error) {
-      console.error("[message-reminder] send failed", reminder.id, error);
+      logError(log, "send failed", error, { reminderId: reminder.id, orderId: reminder.orderId });
     }
   }
 

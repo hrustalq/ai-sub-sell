@@ -1,16 +1,9 @@
 import "server-only";
 
-import {pino, type Logger} from 'pino'
+import { createLogger, getRootLogger, logError } from "./logger/core";
 
-export const logger: Logger = pino({
-    transport: {
-        target: 'pino-pretty',
-        options: {
-        colorize: true,
-        },
-    },
-    level: process.env.PINO_LOG_LEVEL || 'info',
-    redact: [],
-});
+export { createLogger, getRootLogger, logError };
+
+export const logger = getRootLogger();
 
 export default logger;

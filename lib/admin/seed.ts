@@ -1,5 +1,8 @@
 import { hashPassword } from "better-auth/crypto";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { createLogger } from "@/lib/logger-script";
+
+const log = createLogger("seed");
 
 export const DEFAULT_ADMIN_EMAIL = "admin@example.com";
 export const DEFAULT_ADMIN_PASSWORD = "admin12345";
@@ -46,7 +49,7 @@ export async function seedAdminUser(db: PrismaClient): Promise<void> {
       data: { name, emailVerified: true },
     });
 
-    console.log(`Админ обновлён: ${email}`);
+    log.info({ email }, "admin user updated");
     return;
   }
 
@@ -71,5 +74,5 @@ export async function seedAdminUser(db: PrismaClient): Promise<void> {
     },
   });
 
-  console.log(`Админ создан: ${email}`);
+  log.info({ email }, "admin user created");
 }

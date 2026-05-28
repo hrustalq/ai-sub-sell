@@ -1,4 +1,7 @@
+import { createLogger } from "@/lib/logger";
 import { processDueMessageEmailReminders } from "@/lib/orders/message-reminders";
+
+const log = createLogger("cron");
 
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -12,5 +15,6 @@ export async function GET(req: Request) {
   }
 
   const result = await processDueMessageEmailReminders();
+  log.info(result, "message email reminders processed");
   return Response.json({ ok: true, ...result });
 }

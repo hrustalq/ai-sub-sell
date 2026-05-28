@@ -1,7 +1,10 @@
 import "server-only";
 
 import db from "@/lib/db";
+import { createLogger, logError } from "@/lib/logger";
 import { notifyBuyerFulfillmentUpdated } from "@/lib/telegram/notify";
+
+const log = createLogger("fulfillment");
 
 export async function updateOrderFulfillment(orderId: string, productContent: string) {
   const trimmed = productContent.trim();
@@ -15,7 +18,7 @@ export async function updateOrderFulfillment(orderId: string, productContent: st
   });
 
   await notifyBuyerFulfillmentUpdated(orderId).catch((err) =>
-    console.error("[fulfillment] telegram notify failed", err),
+    logError(log, "telegram notify failed", err, { orderId }),
   );
 
   return { ok: true as const };
