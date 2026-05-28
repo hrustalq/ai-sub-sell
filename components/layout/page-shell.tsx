@@ -21,7 +21,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-col gap-4",
+        "flex min-h-0 flex-col gap-4 overflow-hidden",
         fill && "h-full flex-1",
         className,
       )}

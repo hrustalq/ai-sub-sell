@@ -6,14 +6,16 @@ export default async function NewPlanPage() {
   await requireAdmin();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <Link
         href="/admin/plans"
-        className="text-sm text-muted-foreground transition-colors hover:text-foreground w-fit"
+        className="mb-6 w-fit shrink-0 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← К списку тарифов
       </Link>
-      <PlanForm mode="create" />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <PlanForm mode="create" />
+      </div>
     </div>
   );
 }

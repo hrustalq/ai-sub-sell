@@ -87,7 +87,7 @@ export function AppShell({
 
         <main
           className={cn(
-            "flex min-h-0 flex-1 flex-col p-4 md:p-6",
+            "flex min-h-0 flex-1 flex-col overflow-hidden p-4 md:p-6",
             "pb-[calc(4.5rem+env(safe-area-inset-bottom,0))] md:pb-6",
           )}
         >
