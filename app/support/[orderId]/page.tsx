@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { getSupportOrder } from "@/lib/support/queries";
 import { getOrderMessages } from "@/lib/orders/queries";
 import { getOrderUnreadCount, markOrderMessagesRead } from "@/lib/orders/read-state";
+import { PageShell } from "@/components/layout/page-shell";
 import { SupportOrderView } from "@/app/support/_components/support-order-view";
-import { Button } from "@/components/ui/button";
 
 export default async function SupportOrderPage({
   params,
@@ -24,10 +23,13 @@ export default async function SupportOrderPage({
   await markOrderMessagesRead(orderId, "seller");
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <Button asChild variant="ghost" size="sm" className="w-fit px-0">
-        <Link href="/support">← К заказам</Link>
-      </Button>
+    <PageShell
+      fill
+      backHref="/support"
+      backLabel="← К заказам"
+      title={order.planName}
+      description={`№ ${order.id}`}
+    >
       <SupportOrderView
         order={{
           ...order,
@@ -40,6 +42,6 @@ export default async function SupportOrderPage({
         }))}
         initialUnreadCount={unreadCount}
       />
-    </div>
+    </PageShell>
   );
 }

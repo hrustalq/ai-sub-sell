@@ -162,7 +162,7 @@ export function SupportOrderView({
         initialMessages={initialMessages}
         initialUnreadCount={initialUnreadCount}
         orderLabel={order.planName}
-        className="min-h-0 lg:min-h-[calc(100dvh-8rem)]"
+        className="min-h-0 lg:h-full lg:max-h-full"
       />
     </div>
   );

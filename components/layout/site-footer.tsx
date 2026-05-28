@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SITE_NAME } from "@/lib/brand";
+import { cn } from "@/lib/utils";
 
 const legalLinks = [
   { href: "/about", label: "О сервисе" },
@@ -8,9 +9,9 @@ const legalLinks = [
   { href: "/terms", label: "Условия" },
 ] as const;
 
-export function SiteFooter() {
+export function SiteFooter({ className }: { className?: string }) {
   return (
-    <footer className="mt-auto border-t border-border bg-background px-4 py-6">
+    <footer className={cn("mt-auto border-t border-border bg-background px-4 py-6", className)}>
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
         <span>
           © {new Date().getFullYear()} {SITE_NAME}

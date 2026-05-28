@@ -1,12 +1,17 @@
 import { getAdminStats, getAdminActivityLog } from "@/lib/admin/queries";
 import { AdminOverview } from "@/app/admin/_components/admin-overview";
+import { AdminPageShell } from "@/app/admin/_components/admin-page-shell";
 
 export default async function AdminOverviewPage() {
   const [stats, log] = await Promise.all([getAdminStats(), getAdminActivityLog(30)]);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+    <AdminPageShell
+      fill
+      title="Обзор"
+      description="Ключевые показатели и последние события"
+    >
       <AdminOverview stats={stats} log={log} />
-    </div>
+    </AdminPageShell>
   );
 }

@@ -57,6 +57,17 @@ export type AdminPlansProviderGroup = {
   plans: AdminPlanRecord[];
 };
 
+export type AdminPlanExportRow = AdminPlanRecord & {
+  providerLabel: string;
+  providerDescription: string;
+  providerActive: boolean;
+  tier: string;
+  durationMonths: number;
+  tag: string | null;
+  badge: string | null;
+  limits: string;
+};
+
 export type AdminLogEntry = {
   id: string;
   type: "user_registered" | "order_created" | "order_paid" | "order_canceled";

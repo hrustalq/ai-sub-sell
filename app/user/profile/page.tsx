@@ -9,7 +9,7 @@ export default async function UserProfilePage() {
   const user = session.user;
 
   return (
-    <PageShell fill title="Профиль" description="Данные вашего аккаунта">
+    <PageShell fill scroll title="Профиль" description="Данные вашего аккаунта">
       <UserProfileCard
         user={{
           name: user.name,

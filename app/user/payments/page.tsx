@@ -16,6 +16,7 @@ export default async function UserPaymentsPage() {
   return (
     <PageShell
       fill
+      scroll
       title="Платежи"
       description="История ваших заказов и статусы оплаты"
     >

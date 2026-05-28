@@ -36,9 +36,9 @@ export function AppShell({
   const resolvedNavItems = resolveNavItems(navItems);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-muted/30">
-      <aside className="hidden h-full w-60 shrink-0 flex-col border-r border-border bg-background md:flex">
-        <div className="flex h-14 shrink-0 items-center border-b border-border px-5">
+    <div className="flex min-h-0 flex-1 overflow-hidden bg-muted/30">
+      <aside className="hidden h-full w-(--layout-app-sidebar-width) shrink-0 flex-col border-r border-border bg-background md:flex">
+        <div className="flex h-(--layout-app-header-height) shrink-0 items-center border-b border-border px-5">
           <Link
             href={brand.href}
             className="text-base font-semibold tracking-tight text-foreground"
@@ -68,7 +68,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:hidden">
+        <header className="flex h-(--layout-app-header-height) shrink-0 items-center justify-between border-b border-border bg-background px-4 md:hidden">
           <Link
             href={brand.href}
             className="text-base font-semibold tracking-tight text-foreground"
@@ -87,15 +87,15 @@ export function AppShell({
 
         <main
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden p-4 md:p-6",
-            "pb-[calc(4.5rem+env(safe-area-inset-bottom,0))] md:pb-6",
+            "flex min-h-0 flex-1 flex-col p-4 md:p-6",
+            "pb-[calc(var(--layout-app-mobile-nav-height)+0.5rem+env(safe-area-inset-bottom,0))] md:pb-6",
           )}
         >
           {children}
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex h-16 border-t border-border bg-background/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 flex h-(--layout-app-mobile-nav-height) border-t border-border bg-background/95 backdrop-blur md:hidden">
         {resolvedNavItems.map((item) => (
           <AppNavLink key={item.href} item={item} variant="bottom" />
         ))}

@@ -42,13 +42,6 @@ export function AdminOverview({ stats, log }: AdminOverviewProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="shrink-0">
-        <h1>Обзор</h1>
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
-          Ключевые показатели и последние события
-        </p>
-      </div>
-
       <div className="grid shrink-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <Card key={card.title} className="py-0">
@@ -79,7 +72,7 @@ export function AdminOverview({ stats, log }: AdminOverviewProps) {
             Журнал событий
           </CardTitle>
         </CardHeader>
-        <CardContent className="min-h-0 flex-1 p-0">
+        <CardContent className="flex min-h-0 flex-1 flex-col p-0">
           <ActivityLog entries={log} />
         </CardContent>
       </Card>

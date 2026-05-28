@@ -158,7 +158,7 @@ export function CheckoutExperience({
   }
 
   return (
-    <div className="grid min-h-[calc(100dvh-3.5rem)] lg:grid-cols-2">
+    <div className="grid min-h-0 flex-1 lg:grid-cols-2">
       <aside className="relative flex flex-col bg-primary px-6 py-10 text-primary-foreground sm:px-10 lg:px-14 lg:py-14">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
           <Link

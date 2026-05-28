@@ -1,6 +1,7 @@
 import "server-only";
 
 import db from "@/lib/db";
+import { createdAtRangeWhere, type ExportDateRange } from "@/lib/admin/export-range";
 import type { AdminLogEntry, AdminStatsSnapshot } from "@/lib/admin/types";
 
 export type AdminStats = AdminStatsSnapshot;
@@ -129,8 +130,11 @@ export async function getAdminActivityLog(limit = 20): Promise<AdminLogEntry[]> 
     .slice(0, limit);
 }
 
-export async function getAdminUsers(): Promise<AdminUserRow[]> {
+export async function getAdminUsers(
+  range?: ExportDateRange,
+): Promise<AdminUserRow[]> {
   const users = await db.user.findMany({
+    where: range ? createdAtRangeWhere(range) : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       orders: {
@@ -153,8 +157,11 @@ export async function getAdminUsers(): Promise<AdminUserRow[]> {
   });
 }
 
-export async function getAdminPayments(): Promise<AdminPaymentRow[]> {
+export async function getAdminPayments(
+  range?: ExportDateRange,
+): Promise<AdminPaymentRow[]> {
   const orders = await db.order.findMany({
+    where: range ? createdAtRangeWhere(range) : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       user: {

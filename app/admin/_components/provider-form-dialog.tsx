@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProviderMeta } from "@/lib/plans/client";
 import { Button } from "@/components/ui/button";
@@ -31,33 +31,24 @@ type ProviderFormDialogProps = {
   provider?: ProviderMeta;
 };
 
-export function ProviderFormDialog({
-  open,
-  onOpenChange,
-  mode,
-  provider,
-}: ProviderFormDialogProps) {
+type ProviderFormFieldsProps = {
+  mode: "create" | "edit";
+  provider?: ProviderMeta;
+  onOpenChange: (open: boolean) => void;
+};
+
+function ProviderFormFields({ mode, provider, onOpenChange }: ProviderFormFieldsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [id, setId] = useState("");
-  const [label, setLabel] = useState("");
-  const [description, setDescription] = useState("");
-  const [sortOrder, setSortOrder] = useState("0");
-  const [active, setActive] = useState(true);
-
-  useEffect(() => {
-    if (!open) return;
-
-    setError(null);
-    setLoading(false);
-    setId(provider?.id ?? "");
-    setLabel(provider?.label ?? "");
-    setDescription(provider?.description ?? "");
-    setSortOrder(provider != null ? String(provider.sortOrder) : "0");
-    setActive(provider?.active !== false);
-  }, [open, provider]);
+  const [id, setId] = useState(provider?.id ?? "");
+  const [label, setLabel] = useState(provider?.label ?? "");
+  const [description, setDescription] = useState(provider?.description ?? "");
+  const [sortOrder, setSortOrder] = useState(
+    provider != null ? String(provider.sortOrder) : "0",
+  );
+  const [active, setActive] = useState(provider?.active !== false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,94 +88,127 @@ export function ProviderFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Новый провайдер" : "Редактирование провайдера"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "create"
-              ? "Добавьте провайдера для группировки тарифов на сайте и в админке"
-              : `ID: ${provider?.id}`}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {mode === "create" ? "Новый провайдер" : "Редактирование провайдера"}
+        </DialogTitle>
+        <DialogDescription>
+          {mode === "create"
+            ? "Добавьте провайдера для группировки тарифов на сайте и в админке"
+            : `ID: ${provider?.id}`}
+        </DialogDescription>
+      </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <FieldGroup>
-            {mode === "create" && (
-              <Field>
-                <FieldLabel htmlFor="provider-id">ID провайдера</FieldLabel>
-                <FieldDescription>Например: codex, cursor, windsurf</FieldDescription>
-                <Input
-                  id="provider-id"
-                  value={id}
-                  onChange={(e) => setId(e.target.value)}
-                  placeholder="windsurf"
-                  pattern="[a-z0-9][a-z0-9_-]{1,31}"
-                  required
-                  disabled={loading}
-                />
-              </Field>
-            )}
-
+      <form onSubmit={handleSubmit}>
+        <FieldGroup>
+          {mode === "create" && (
             <Field>
-              <FieldLabel htmlFor="provider-label">Название</FieldLabel>
+              <FieldLabel htmlFor="provider-id">ID провайдера</FieldLabel>
+              <FieldDescription>Например: codex, cursor, windsurf</FieldDescription>
               <Input
-                id="provider-label"
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                placeholder="Windsurf"
+                id="provider-id"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
+                placeholder="windsurf"
+                pattern="[a-z0-9][a-z0-9_-]{1,31}"
                 required
                 disabled={loading}
               />
             </Field>
+          )}
 
-            <Field>
-              <FieldLabel htmlFor="provider-description">Описание</FieldLabel>
-              <Textarea
-                id="provider-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                disabled={loading}
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="provider-sort-order">Порядок сортировки</FieldLabel>
-              <Input
-                id="provider-sort-order"
-                type="number"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                disabled={loading}
-              />
-            </Field>
-
-            <label className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
-              <span className="text-sm font-medium">Активен на сайте</span>
-              <Switch checked={active} onCheckedChange={setActive} disabled={loading} />
-            </label>
-
-            {error && <FieldError>{error}</FieldError>}
-          </FieldGroup>
-
-          <DialogFooter className="mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
+          <Field>
+            <FieldLabel htmlFor="provider-label">Название</FieldLabel>
+            <Input
+              id="provider-label"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Windsurf"
+              required
               disabled={loading}
-            >
-              Отмена
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Spinner className="mr-1" />}
-              {loading ? "Сохранение…" : mode === "create" ? "Создать" : "Сохранить"}
-            </Button>
-          </DialogFooter>
-        </form>
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="provider-description">Описание</FieldLabel>
+            <Textarea
+              id="provider-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              disabled={loading}
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="provider-sort-order">Порядок сортировки</FieldLabel>
+            <Input
+              id="provider-sort-order"
+              type="number"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              disabled={loading}
+            />
+          </Field>
+
+          <label className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
+            <span className="text-sm font-medium">Активен на сайте</span>
+            <Switch checked={active} onCheckedChange={setActive} disabled={loading} />
+          </label>
+
+          {error && <FieldError>{error}</FieldError>}
+        </FieldGroup>
+
+        <DialogFooter className="mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
+            Отмена
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading && <Spinner className="mr-1" />}
+            {loading ? "Сохранение…" : mode === "create" ? "Создать" : "Сохранить"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
+  );
+}
+
+export function ProviderFormDialog({
+  open,
+  onOpenChange,
+  mode,
+  provider,
+}: ProviderFormDialogProps) {
+  const [session, setSession] = useState(0);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setSession((value) => value + 1);
+    }
+  }
+
+  const formKey =
+    mode === "create" ? `create-${session}` : (provider?.id ?? "edit");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        {open ? (
+          <ProviderFormFields
+            key={formKey}
+            mode={mode}
+            provider={provider}
+            onOpenChange={onOpenChange}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );

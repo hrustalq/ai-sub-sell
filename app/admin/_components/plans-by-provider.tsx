@@ -77,41 +77,45 @@ export function PlansByProvider({
               onOpenChange={(open) => toggleProvider(group.id, open)}
               className="shrink-0 overflow-hidden rounded-xl border border-border bg-card"
             >
-              <CollapsibleTrigger className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40">
-                <ChevronDownIcon
-                  className={cn(
-                    "size-4 shrink-0 text-muted-foreground transition-transform",
-                    isOpen && "rotate-180",
-                  )}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-foreground">{group.label}</span>
-                    {!group.active && (
-                      <Badge variant="outline" className="text-[10px]">
-                        скрыт
-                      </Badge>
+              <div className="flex items-center gap-1">
+                <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40">
+                  <ChevronDownIcon
+                    className={cn(
+                      "size-4 shrink-0 text-muted-foreground transition-transform",
+                      isOpen && "rotate-180",
                     )}
-                    <Badge variant="secondary" className="text-[10px]">
-                      {group.plans.length} тариф(ов)
-                    </Badge>
-                    <Badge variant="outline" className="text-[10px]">
-                      {activeCount} активн.
-                    </Badge>
-                  </div>
-                  {group.description && (
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {group.description}
-                    </p>
-                  )}
-                </div>
-                {providerMeta && (
-                  <EditProviderButton
-                    label={group.label}
-                    onClick={() => setEditProvider(providerMeta)}
                   />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-foreground">{group.label}</span>
+                      {!group.active && (
+                        <Badge variant="outline" className="text-[10px]">
+                          скрыт
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="text-[10px]">
+                        {group.plans.length} тариф(ов)
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {activeCount} активн.
+                      </Badge>
+                    </div>
+                    {group.description && (
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {group.description}
+                      </p>
+                    )}
+                  </div>
+                </CollapsibleTrigger>
+                {providerMeta && (
+                  <div className="shrink-0 pr-2">
+                    <EditProviderButton
+                      label={group.label}
+                      onClick={() => setEditProvider(providerMeta)}
+                    />
+                  </div>
                 )}
-              </CollapsibleTrigger>
+              </div>
 
               <CollapsibleContent>
                 <div className="border-t border-border">

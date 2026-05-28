@@ -114,8 +114,7 @@ export function OrderExperience({
     <main
       className={cn(
         "mx-auto flex w-full max-w-6xl flex-1 flex-col gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5",
-        "max-h-[calc(100dvh-3.5rem)] min-h-0 overflow-y-auto",
-        "lg:h-full lg:min-h-0",
+        "min-h-0 max-lg:overflow-y-auto lg:overflow-hidden",
       )}
     >
       <div className="shrink-0 flex flex-col gap-2">

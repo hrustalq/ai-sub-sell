@@ -35,7 +35,7 @@ export default function RootLayout({
       lang="ru"
       suppressHydrationWarning
       className={cn(
-        "h-full",
+        "h-dvh overflow-hidden",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
@@ -43,9 +43,11 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex h-dvh flex-col overflow-hidden">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+          </TooltipProvider>
         </ThemeProvider>
         <YandexMetrika />
       </body>
