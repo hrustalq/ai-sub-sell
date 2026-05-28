@@ -5,7 +5,7 @@ import { seedAdminUser } from "@/lib/admin/seed";
 import { getSqliteDatabaseUrl } from "@/lib/database-url";
 import { createLogger, logError } from "@/lib/logger-script";
 import { seedDemoOrders } from "@/lib/orders/seed";
-import { buildDefaultPlans } from "@/lib/plans/catalog";
+import { buildDefaultPlans, DEFAULT_PROVIDERS } from "@/lib/plans/catalog";
 import { LEGACY_PLAN_IDS, planToDbRecord } from "@/lib/plans/seed";
 
 const log = createLogger("seed");
@@ -13,8 +13,41 @@ const log = createLogger("seed");
 const adapter = new PrismaBetterSqlite3({ url: getSqliteDatabaseUrl() });
 const db = new PrismaClient({ adapter });
 
+async function seedProvidersCatalog() {
+  for (const provider of DEFAULT_PROVIDERS) {
+    await db.planProvider.upsert({
+      where: { id: provider.id },
+      create: {
+        id: provider.id,
+        label: provider.label,
+        description: provider.description,
+        sortOrder: provider.sortOrder,
+        active: true,
+      },
+      update: {
+        label: provider.label,
+        description: provider.description,
+        sortOrder: provider.sortOrder,
+      },
+    });
+  }
+}
+
 async function main() {
-  const defaults = buildDefaultPlans();
+  await seedProvidersCatalog();
+
+  const providers = await db.planProvider.findMany({
+    orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+  });
+  const defaults = buildDefaultPlans(
+    providers.map((provider) => ({
+      id: provider.id,
+      label: provider.label,
+      description: provider.description,
+      sortOrder: provider.sortOrder,
+      active: provider.active,
+    })),
+  );
 
   for (const plan of defaults) {
     await db.plan.upsert({
@@ -29,7 +62,7 @@ async function main() {
     data: { active: false },
   });
 
-  log.info({ count: defaults.length }, "plans synced");
+  log.info({ providers: providers.length, plans: defaults.length }, "catalog synced");
 
   await seedAdminUser(db);
   await seedDemoOrders(db);

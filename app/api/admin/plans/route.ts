@@ -64,6 +64,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "Тариф с таким ID уже существует" }, { status: 409 });
   }
 
+  const provider = await db.planProvider.findUnique({ where: { id: parsed.provider } });
+  if (!provider) {
+    return Response.json({ error: "Провайдер не найден" }, { status: 400 });
+  }
+
   const row = await db.plan.create({
     data: planToDbRecord(toPlanData(parsed)),
   });

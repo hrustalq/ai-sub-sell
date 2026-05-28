@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckIcon } from "lucide-react";
-import type { Plan, PricingProviderGroup } from "@/lib/plans/client";
+import type { Plan, PricingProviderGroup, ProviderMeta } from "@/lib/plans/client";
 import {
   groupPlansByProvider,
   getDiscountPercent,
@@ -195,8 +195,14 @@ function TierCard({
   );
 }
 
-export function PricingSection({ plans }: { plans: Plan[] }) {
-  const catalog = useMemo(() => groupPlansByProvider(plans), [plans]);
+export function PricingSection({
+  plans,
+  providers,
+}: {
+  plans: Plan[];
+  providers: ProviderMeta[];
+}) {
+  const catalog = useMemo(() => groupPlansByProvider(plans, providers), [plans, providers]);
   const defaultProvider = catalog[0]?.id ?? "codex";
 
   if (catalog.length === 0) {

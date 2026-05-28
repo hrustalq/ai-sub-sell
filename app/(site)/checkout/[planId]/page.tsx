@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { getPlan, getPlans } from "@/lib/plans";
+import { getPlan, getPlans, getActiveProviders } from "@/lib/plans";
 import { CheckoutExperience } from "./checkout-experience";
 
 export async function generateMetadata({
@@ -24,7 +24,11 @@ export default async function CheckoutPage({
   params: Promise<{ planId: string }>;
 }) {
   const { planId } = await params;
-  const [plan, catalogPlans] = await Promise.all([getPlan(planId), getPlans()]);
+  const [plan, catalogPlans, providers] = await Promise.all([
+    getPlan(planId),
+    getPlans(),
+    getActiveProviders(),
+  ]);
   if (!plan) notFound();
 
   const session = await auth.api.getSession({ headers: await headers() });
@@ -33,6 +37,7 @@ export default async function CheckoutPage({
     <CheckoutExperience
       initialPlan={plan}
       catalogPlans={catalogPlans}
+      providers={providers}
       userEmail={session?.user?.email}
       isLoggedIn={Boolean(session?.user)}
     />

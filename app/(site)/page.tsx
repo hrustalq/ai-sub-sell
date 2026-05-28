@@ -10,7 +10,7 @@ import {
   ShieldCheckIcon,
 } from "lucide-react";
 import { getNavbarState } from "@/lib/navbar";
-import { getPlans, seedPlansIfEmpty, PROVIDERS } from "@/lib/plans";
+import { getPlans, getActiveProviders, seedPlansIfEmpty } from "@/lib/plans";
 import { PricingSection } from "@/components/plans/pricing-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -100,8 +100,6 @@ const resources = [
   },
 ];
 
-const providerNames = PROVIDERS.map((p) => p.label).join(", ");
-
 export const metadata: Metadata = {
   title: {
     absolute: SITE_TITLE,
@@ -120,7 +118,8 @@ export const metadata: Metadata = {
 export default async function Home() {
   const navbar = await getNavbarState();
   await seedPlansIfEmpty();
-  const plans = await getPlans();
+  const [plans, providers] = await Promise.all([getPlans(), getActiveProviders()]);
+  const providerNames = providers.map((provider) => provider.label).join(", ");
 
   return (
     <>
@@ -196,7 +195,7 @@ export default async function Home() {
               Переключайте вкладки, выбирайте опцию и срок — скидка рассчитывается автоматически
             </p>
           </div>
-          <PricingSection plans={plans} />
+          <PricingSection plans={plans} providers={providers} />
         </div>
       </section>
 

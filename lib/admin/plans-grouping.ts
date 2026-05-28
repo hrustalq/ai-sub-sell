@@ -1,10 +1,12 @@
-import { PROVIDERS, getProviderMeta } from "@/lib/plans/catalog";
+import { findProviderMeta } from "@/lib/plans/provider-validation";
+import type { ProviderMeta } from "@/lib/plans/types";
 import type { AdminPlanRecord, AdminPlansProviderGroup } from "@/lib/admin/types";
 
 export type { AdminPlansProviderGroup };
 
 export function groupAdminPlansByProvider(
   plans: AdminPlanRecord[],
+  providers: ProviderMeta[],
 ): AdminPlansProviderGroup[] {
   const byProvider = new Map<string, AdminPlanRecord[]>();
 
@@ -18,18 +20,21 @@ export function groupAdminPlansByProvider(
     list.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
   }
 
-  const providerOrder = [...PROVIDERS].sort((a, b) => a.sortOrder - b.sortOrder);
+  const providerOrder = [...providers].sort((a, b) => a.sortOrder - b.sortOrder);
   const orderedIds = [
-    ...providerOrder.map((p) => p.id).filter((id) => byProvider.has(id)),
-    ...[...byProvider.keys()].filter((id) => !providerOrder.some((p) => p.id === id)),
+    ...providerOrder.map((provider) => provider.id),
+    ...[...byProvider.keys()].filter(
+      (id) => !providerOrder.some((provider) => provider.id === id),
+    ),
   ];
 
   return orderedIds.map((providerId) => {
-    const meta = getProviderMeta(providerId);
+    const meta = findProviderMeta(providerId, providers);
     return {
       id: providerId,
       label: meta?.label ?? providerId,
       description: meta?.description ?? "",
+      active: meta?.active ?? true,
       plans: byProvider.get(providerId) ?? [],
     };
   });

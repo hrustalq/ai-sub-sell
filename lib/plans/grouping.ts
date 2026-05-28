@@ -1,9 +1,12 @@
-import type { Plan, PricingProviderGroup, PricingTierGroup } from "@/lib/plans/types";
-import { PROVIDERS, getProviderMeta } from "@/lib/plans/catalog";
+import type { Plan, PricingProviderGroup, PricingTierGroup, ProviderMeta } from "@/lib/plans/types";
+import { findProviderMeta } from "@/lib/plans/provider-validation";
 
 export type { PricingProviderGroup, PricingTierGroup };
 
-export function groupPlansByProvider(plans: Plan[]): PricingProviderGroup[] {
+export function groupPlansByProvider(
+  plans: Plan[],
+  providers: ProviderMeta[],
+): PricingProviderGroup[] {
   const byProvider = new Map<string, Map<string, Plan[]>>();
 
   for (const plan of plans) {
@@ -17,16 +20,17 @@ export function groupPlansByProvider(plans: Plan[]): PricingProviderGroup[] {
     tiers.get(plan.tier)!.push(plan);
   }
 
-  const providerOrder = [...PROVIDERS].sort((a, b) => a.sortOrder - b.sortOrder);
+  const activeProviders = providers.filter((provider) => provider.active !== false);
+  const providerOrder = [...activeProviders].sort((a, b) => a.sortOrder - b.sortOrder);
   const orderedProviderIds = [
-    ...providerOrder.map((p) => p.id).filter((id) => byProvider.has(id)),
+    ...providerOrder.map((provider) => provider.id).filter((id) => byProvider.has(id)),
     ...[...byProvider.keys()].filter(
-      (id) => !providerOrder.some((p) => p.id === id),
+      (id) => !providerOrder.some((provider) => provider.id === id),
     ),
   ];
 
   return orderedProviderIds.map((providerId) => {
-    const meta = getProviderMeta(providerId);
+    const meta = findProviderMeta(providerId, providers);
     const tierMap = byProvider.get(providerId)!;
 
     const tiers: PricingTierGroup[] = [...tierMap.entries()]
@@ -40,7 +44,7 @@ export function groupPlansByProvider(plans: Plan[]): PricingProviderGroup[] {
           label: first.tierLabel,
           limits: first.limits,
           tag: first.tag,
-          highlight: sorted.some((p) => p.highlight),
+          highlight: sorted.some((plan) => plan.highlight),
           options: sorted,
         };
       })

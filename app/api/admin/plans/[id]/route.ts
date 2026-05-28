@@ -72,6 +72,11 @@ export async function PATCH(
     return Response.json({ error: parsed.error }, { status: 400 });
   }
 
+  const provider = await db.planProvider.findUnique({ where: { id: parsed.provider } });
+  if (!provider) {
+    return Response.json({ error: "Провайдер не найден" }, { status: 400 });
+  }
+
   const { id: planRecordId, ...data } = planToDbRecord(toPlanData(parsed, id));
   const row = await db.plan.update({ where: { id: planRecordId }, data });
 

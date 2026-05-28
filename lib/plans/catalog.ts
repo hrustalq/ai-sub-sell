@@ -1,8 +1,8 @@
-import type { PlanData, ProviderId, ProviderMeta } from "@/lib/plans/types";
+import type { PlanData, ProviderMeta } from "@/lib/plans/types";
 
-export type { ProviderId, ProviderMeta };
+export type { ProviderMeta };
 
-export const PROVIDERS: ProviderMeta[] = [
+export const DEFAULT_PROVIDERS: ProviderMeta[] = [
   {
     id: "codex",
     label: "Codex",
@@ -33,7 +33,7 @@ export const DURATION_OPTIONS = [
 type TierTemplate = {
   id: string;
   label: string;
-  monthlyPrice: Record<ProviderId, number>;
+  monthlyPrice: Record<string, number>;
   limits: string[];
   highlight?: boolean;
   badge?: string | null;
@@ -77,27 +77,20 @@ export function formatDurationPeriod(months: number): string {
   return `${months} мес.`;
 }
 
-export function getProviderMeta(providerId: string): ProviderMeta | undefined {
-  return PROVIDERS.find((p) => p.id === providerId);
-}
-
-export function getProviderLabel(providerId: string): string {
-  return getProviderMeta(providerId)?.label ?? providerId;
-}
-
 function buildPlanName(provider: ProviderMeta, tier: TierTemplate, months: number): string {
   const duration =
     months === 0 ? "неделя" : months === 1 ? "1 месяц" : `${months} месяцев`;
   return `${provider.label} — ${tier.label} (${duration})`;
 }
 
-export function buildDefaultPlans(): PlanData[] {
+export function buildDefaultPlans(providers: ProviderMeta[] = DEFAULT_PROVIDERS): PlanData[] {
   const plans: PlanData[] = [];
 
-  for (const provider of PROVIDERS) {
+  for (const provider of providers) {
     for (const tier of TIER_TEMPLATES) {
       const durations = tier.durations ?? [1, 3, 6, 12];
       const monthlyBase = tier.monthlyPrice[provider.id];
+      if (monthlyBase == null) continue;
 
       for (const months of durations) {
         const durationOpt =

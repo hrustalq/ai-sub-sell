@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
+import { getAdminProviders } from "@/lib/admin/plans";
 import { PlanForm } from "@/app/admin/_components/plan-form";
 
 export default async function NewPlanPage() {
   await requireAdmin();
+  const providers = await getAdminProviders();
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
@@ -14,7 +16,7 @@ export default async function NewPlanPage() {
         ← К списку тарифов
       </Link>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <PlanForm mode="create" />
+        <PlanForm mode="create" providers={providers} />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import type { Context } from "grammy";
 import { Bot, InlineKeyboard } from "grammy";
-import { getPlans } from "@/lib/plans";
+import { getPlans, getActiveProviders } from "@/lib/plans";
 import { formatPrice } from "@/lib/plans/format";
 import { groupPlansByProvider } from "@/lib/plans/grouping";
 import { SITE_NAME } from "@/lib/brand";
@@ -114,7 +114,8 @@ export function createSellBot(): Bot {
     await ctx.answerCallbackQuery();
     const providerId = ctx.callbackQuery.data.slice(3);
     const plans = await getPlans();
-    const group = groupPlansByProvider(plans).find((g) => g.id === providerId);
+    const providers = await getActiveProviders();
+    const group = groupPlansByProvider(plans, providers).find((g) => g.id === providerId);
     if (!group) {
       await ctx.editMessageText("Тарифы не найдены.");
       return;
@@ -129,7 +130,8 @@ export function createSellBot(): Bot {
     await ctx.answerCallbackQuery();
     const [, providerId, tierId] = ctx.callbackQuery.data.split(":");
     const plans = await getPlans();
-    const group = groupPlansByProvider(plans).find((g) => g.id === providerId);
+    const providers = await getActiveProviders();
+    const group = groupPlansByProvider(plans, providers).find((g) => g.id === providerId);
     const tier = group?.tiers.find((t) => t.id === tierId);
     if (!tier) {
       await ctx.editMessageText("Тарифы не найдены.");
@@ -267,8 +269,8 @@ export function createSellBot(): Bot {
 }
 
 async function showCatalog(ctx: Context, edit = false) {
-  const plans = await getPlans();
-  const groups = groupPlansByProvider(plans);
+  const [plans, providers] = await Promise.all([getPlans(), getActiveProviders()]);
+  const groups = groupPlansByProvider(plans, providers);
   const text = "📋 <b>Каталог тарифов</b>\n\nВыберите сервис:";
   const markup = new InlineKeyboard(providerKeyboard(groups));
 

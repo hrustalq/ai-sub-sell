@@ -27,4 +27,4 @@ export type {
   AdminLogEntry,
 } from "@/lib/admin/types";
 export { groupAdminPlansByProvider } from "@/lib/admin/plans-grouping";
-export { getAdminPlanGroups, toAdminPlanRecord } from "@/lib/admin/plans";
+export { getAdminPlanGroups, getAdminProviders, toAdminPlanRecord } from "@/lib/admin/plans";

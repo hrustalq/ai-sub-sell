@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckIcon, ShieldCheckIcon, SparklesIcon } from "lucide-react";
-import type { Plan } from "@/lib/plans/client";
+import type { Plan, ProviderMeta } from "@/lib/plans/client";
 import {
   formatPrice,
   getDiscountPercent,
@@ -39,6 +39,7 @@ import { CheckoutForm } from "./checkout-form";
 type CheckoutExperienceProps = {
   initialPlan: Plan;
   catalogPlans: Plan[];
+  providers: ProviderMeta[];
   userEmail?: string;
   isLoggedIn: boolean;
 };
@@ -107,6 +108,7 @@ function PlanOptionCard({
 export function CheckoutExperience({
   initialPlan,
   catalogPlans,
+  providers,
   userEmail,
   isLoggedIn,
 }: CheckoutExperienceProps) {
@@ -170,7 +172,7 @@ export function CheckoutExperience({
           <div className="flex flex-1 flex-col justify-center gap-8">
             <div>
               <p className="text-sm font-medium uppercase tracking-wider text-zinc-400">
-                {getProviderLabel(selected.provider)}
+                {getProviderLabel(selected.provider, providers)}
               </p>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                 {selected.tierLabel}

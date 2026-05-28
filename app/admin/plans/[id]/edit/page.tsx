@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/admin";
+import { getAdminProviders } from "@/lib/admin/plans";
 import { getPlanById } from "@/lib/plans";
 import { PlanForm } from "@/app/admin/_components/plan-form";
 
@@ -11,7 +12,7 @@ export default async function EditPlanPage({
 }) {
   await requireAdmin();
   const { id } = await params;
-  const plan = await getPlanById(id);
+  const [plan, providers] = await Promise.all([getPlanById(id), getAdminProviders()]);
   if (!plan) notFound();
 
   return (
@@ -23,7 +24,7 @@ export default async function EditPlanPage({
         ← К списку тарифов
       </Link>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <PlanForm mode="edit" plan={plan} />
+        <PlanForm mode="edit" plan={plan} providers={providers} />
       </div>
     </div>
   );

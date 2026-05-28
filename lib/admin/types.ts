@@ -53,6 +53,7 @@ export type AdminPlansProviderGroup = {
   id: string;
   label: string;
   description: string;
+  active: boolean;
   plans: AdminPlanRecord[];
 };
 

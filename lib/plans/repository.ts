@@ -3,6 +3,7 @@ import "server-only";
 import db from "@/lib/db";
 import { buildDefaultPlans } from "@/lib/plans/catalog";
 import { planToDbRecord } from "@/lib/plans/seed";
+import { seedProvidersIfEmpty, getAllProviders } from "@/lib/plans/providers";
 import type { Plan } from "@/lib/plans/types";
 
 type PlanRow = {
@@ -73,7 +74,9 @@ export async function getPlanById(id: string): Promise<Plan | null> {
 }
 
 export async function seedPlansCatalog(): Promise<void> {
-  const defaults = buildDefaultPlans();
+  await seedProvidersIfEmpty();
+  const providers = await getAllProviders();
+  const defaults = buildDefaultPlans(providers);
 
   for (const plan of defaults) {
     await db.plan.upsert({
@@ -85,6 +88,7 @@ export async function seedPlansCatalog(): Promise<void> {
 }
 
 export async function seedPlansIfEmpty(): Promise<void> {
+  await seedProvidersIfEmpty();
   const count = await db.plan.count();
   if (count === 0) {
     await seedPlansCatalog();

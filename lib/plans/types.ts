@@ -23,13 +23,12 @@ export type PlanData = Omit<Plan, "active" | "sortOrder"> & {
   sortOrder?: number;
 };
 
-export type ProviderId = "codex" | "cursor" | "claude";
-
 export type ProviderMeta = {
-  id: ProviderId;
+  id: string;
   label: string;
   description: string;
   sortOrder: number;
+  active?: boolean;
 };
 
 export type PricingTierGroup = {

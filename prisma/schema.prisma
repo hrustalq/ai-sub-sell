@@ -76,6 +76,18 @@ model Verification {
   @@map("verification")
 }
 
+model PlanProvider {
+  id          String   @id
+  label       String
+  description String   @default("")
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("plan_provider")
+}
+
 model Plan {
   id             String   @id
   name           String

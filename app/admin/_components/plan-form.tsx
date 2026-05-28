@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Plan } from "@/lib/plans/client";
-import { PROVIDERS, DURATION_OPTIONS, formatDurationPeriod } from "@/lib/plans/client";
+import type { Plan, ProviderMeta } from "@/lib/plans/client";
+import { DURATION_OPTIONS, formatDurationPeriod } from "@/lib/plans/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,7 @@ import { Spinner } from "@/components/ui/spinner";
 type PlanFormProps = {
   mode: "create" | "edit";
   plan?: Plan;
+  providers: ProviderMeta[];
 };
 
 const DURATION_CHOICES = [
@@ -43,14 +44,17 @@ const DURATION_CHOICES = [
   ...DURATION_OPTIONS.map((d) => ({ months: d.months, label: d.label })),
 ];
 
-export function PlanForm({ mode, plan }: PlanFormProps) {
+export function PlanForm({ mode, plan, providers }: PlanFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const defaultProvider =
+    plan?.provider ?? providers.find((provider) => provider.active !== false)?.id ?? providers[0]?.id ?? "";
+
   const [id, setId] = useState(plan?.id ?? "");
   const [name, setName] = useState(plan?.name ?? "");
-  const [provider, setProvider] = useState(plan?.provider ?? "codex");
+  const [provider, setProvider] = useState(defaultProvider);
   const [tier, setTier] = useState(plan?.tier ?? "standard");
   const [tierLabel, setTierLabel] = useState(plan?.tierLabel ?? "Стандарт");
   const [durationMonths, setDurationMonths] = useState(
@@ -128,6 +132,13 @@ export function PlanForm({ mode, plan }: PlanFormProps) {
         </CardDescription>
       </CardHeader>
 
+      {providers.length === 0 ? (
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Сначала добавьте провайдера на странице тарифов.
+          </p>
+        </CardContent>
+      ) : (
       <form onSubmit={handleSubmit}>
         <CardContent>
           <FieldGroup>
@@ -157,7 +168,7 @@ export function PlanForm({ mode, plan }: PlanFormProps) {
                     <SelectValue placeholder="Провайдер" />
                   </SelectTrigger>
                   <SelectContent>
-                    {PROVIDERS.map((p) => (
+                    {providers.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.label}
                       </SelectItem>
@@ -345,6 +356,7 @@ export function PlanForm({ mode, plan }: PlanFormProps) {
           </Button>
         </CardFooter>
       </form>
+      )}
     </Card>
   );
 }
