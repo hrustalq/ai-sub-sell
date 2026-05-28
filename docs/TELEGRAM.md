@@ -86,7 +86,7 @@ openssl rand -hex 32
 
 Telegram must get HTTP **200 quickly**. Handlers that await DB, SMTP, or `ctx.reply` (outbound Bot API) used to block the webhook response; Telegram then reports `Connection timed out` or `500`.
 
-Webhook routes **acknowledge immediately** and process updates in the background via Next.js `after()`. After deploying, restart and re-check:
+Webhook routes **acknowledge immediately** and process updates in the background via Next.js `after()`. Each update calls `bot.init()` before `handleUpdate` (grammY requires this when not using `webhookCallback`). After deploying, restart and re-check:
 
 ```bash
 sudo systemctl restart ai-sub-sell

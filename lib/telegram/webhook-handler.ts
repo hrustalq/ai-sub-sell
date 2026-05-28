@@ -3,6 +3,7 @@ import "server-only";
 import type { Bot } from "grammy";
 import type { Update } from "grammy/types";
 import { after } from "next/server";
+import { ensureBotInitialized } from "@/lib/telegram/bots";
 import { createLogger, logError } from "@/lib/logger/core";
 
 const log = createLogger("telegram-webhook");
@@ -28,6 +29,7 @@ export function createTelegramWebhookHandler(bot: Bot, label: string) {
 
     after(async () => {
       try {
+        await ensureBotInitialized(bot);
         await bot.handleUpdate(update);
       } catch (err) {
         logError(log, "telegram webhook processing failed", err, {

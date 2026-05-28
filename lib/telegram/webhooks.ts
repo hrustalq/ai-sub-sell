@@ -262,12 +262,16 @@ export async function ensureTelegramWebhooks(
 }
 
 async function warmTelegramBots(): Promise<void> {
-  const { getSellBot, getSupportBot, isSellBotEnabled, isSupportBotEnabled } =
-    await import("@/lib/telegram/bots");
+  const {
+    ensureSellBotInitialized,
+    ensureSupportBotInitialized,
+    isSellBotEnabled,
+    isSupportBotEnabled,
+  } = await import("@/lib/telegram/bots");
 
   const tasks: Promise<void>[] = [];
-  if (isSellBotEnabled()) tasks.push(getSellBot().init());
-  if (isSupportBotEnabled()) tasks.push(getSupportBot().init());
+  if (isSellBotEnabled()) tasks.push(ensureSellBotInitialized());
+  if (isSupportBotEnabled()) tasks.push(ensureSupportBotInitialized());
   await Promise.all(tasks);
 }
 
