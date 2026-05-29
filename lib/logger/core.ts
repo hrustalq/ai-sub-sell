@@ -23,6 +23,8 @@ const REDACT_PATHS = [
   "GITHUB_CLIENT_SECRET",
   "CRON_SECRET",
   "DD_API_KEY",
+  "*.ctx.api.token",
+  "err.ctx.api.token",
 ];
 
 export function isProduction(): boolean {

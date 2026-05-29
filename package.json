@@ -16,6 +16,7 @@
     "telegram:poll": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",
     "telegram:webhooks": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-set-webhooks.ts",
     "telegram:check": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-check.ts",
+    "datadog:check": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/datadog-check.ts",
     "logs": "bash scripts/logs.sh follow",
     "logs:follow": "bash scripts/logs.sh follow",
     "logs:tail": "bash scripts/logs.sh tail",

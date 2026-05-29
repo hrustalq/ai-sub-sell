@@ -261,31 +261,49 @@ pnpm exec prisma migrate deploy
 
 The app logs structured JSON with [Pino](https://getpino.io/) to stdout; systemd captures it in the journal (`SyslogIdentifier=ai-sub-sell`). In production, `dd-trace` loads via `datadog-preload.cjs` (see systemd `NODE_OPTIONS`) for APM and automatic trace ID injection into JSON logs (`dd.trace_id`, `dd.span_id`).
 
-### Datadog Agent (production)
+### Datadog logs (HTTP intake — default)
 
-One-time on the VPS as root:
+Add your API key to `shared/.env`:
+
+```bash
+DD_API_KEY=your-key
+DD_SITE=datadoghq.com   # EU accounts: datadoghq.eu
+```
+
+Redeploy, then verify:
+
+```bash
+cd /opt/ai-sub-sell/app
+pnpm datadog:check
+```
+
+Open Datadog → Logs, filter `service:ai-sub-sell`. Logs appear within ~1 minute.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `DD_API_KEY` | — | **Required** for logs in Datadog |
+| `DD_SITE` | `datadoghq.com` | Must match your Datadog region |
+| `DD_SERVICE` | `ai-sub-sell` | Service name in Log Explorer |
+| `DD_ENV` | `production` | Environment tag |
+| `DD_LOGS_HTTP` | auto in prod | Set `false` if using Agent journald only |
+
+Run via **systemd**, not manual `next start` — the unit sets `NODE_OPTIONS=--require datadog-preload.cjs`.
+
+After updating the systemd unit from the repo:
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart ai-sub-sell
+```
+
+### Alternative: Datadog Agent (journald)
+
+If you prefer the Agent instead of HTTP intake, set `DD_LOGS_HTTP=false` in `.env`, then:
 
 ```bash
 sudo DD_API_KEY=your-key DD_SITE=datadoghq.com bash /opt/ai-sub-sell/app/deploy/setup-datadog.sh
 ```
 
-This installs the Agent, enables journald log collection for `ai-sub-sell.service`, and ships logs to Datadog Log Explorer. Traces go to the local Agent on port 8126.
-
-Set in `shared/.env` (optional — defaults are applied by `datadog-preload.cjs`):
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `DD_TRACE_ENABLED` | `true` in prod | Disable with `false` |
-| `DD_SERVICE` | `ai-sub-sell` | Service name in Datadog |
-| `DD_ENV` | `production` | Environment tag |
-| `DD_SITE` | `datadoghq.com` | EU: `datadoghq.eu` |
-| `DD_API_KEY` | — | Required for Agent install script |
-
-After changing systemd `NODE_OPTIONS`, re-apply the unit from the repo and restart:
-
-```bash
-sudo systemctl daemon-reload && sudo systemctl restart ai-sub-sell
-```
+This collects logs from `ai-sub-sell.service` journald and sends traces to the local Agent on port 8126.
 
 ### Local journal (VPS)
 
@@ -323,11 +341,8 @@ Env (in `shared/.env`):
 ### Local dev with Datadog
 
 ```bash
-# APM + log correlation
-DD_TRACE_ENABLED=true pnpm dev:dd
-
-# Ship logs directly (no Agent) — do not enable on VPS with journald collection
-DD_TRACE_ENABLED=true DD_API_KEY=... DD_LOGS_HTTP=true pnpm dev:dd
+DD_TRACE_ENABLED=true DD_API_KEY=... pnpm dev:dd
+pnpm datadog:check   # sends a test log
 ```
 
 ## 8. Troubleshooting

@@ -4,12 +4,12 @@ export function datadogTracingEnabled(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
-/** Direct HTTP log intake (dev or when no agent). Do not enable with journald agent collection. */
+/** Direct HTTP log intake. Enabled in production when DD_API_KEY is set. Set DD_LOGS_HTTP=false with the Agent to avoid duplicates. */
 export function datadogHttpLogsEnabled(): boolean {
-  return (
-    process.env.DD_LOGS_HTTP === "true" &&
-    Boolean(process.env.DD_API_KEY?.trim())
-  );
+  if (process.env.DD_LOGS_HTTP === "false") return false;
+  if (!process.env.DD_API_KEY?.trim()) return false;
+  if (process.env.DD_LOGS_HTTP === "true") return true;
+  return process.env.NODE_ENV === "production";
 }
 
 export function getDatadogSite(): string {
