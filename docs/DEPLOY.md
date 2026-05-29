@@ -205,7 +205,7 @@ Prefer `sudo -u ai-sub-sell` for all app commands.
 Deploy will:
 
 1. Back up the existing DB (keeps last 10 backups)
-2. Run migrations (`pnpm db:migrate` — includes `orderNumber` backfill in SQL; falls back to `db:push` only when no `prisma/migrations` exist)
+2. Run migrations via `deploy/migrate-db.sh` (baselines existing DBs on first run, then `prisma migrate deploy`)
 3. Build and restart the systemd unit
 
 It **does not** delete or replace `/var/lib/ai-sub-sell/data/`.
@@ -242,18 +242,20 @@ SEED_SKIP_DEMO_ORDERS=0 sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/see
 
 ### Migrations
 
-Schema changes use `prisma/migrations/`. Deploy runs `pnpm db:migrate` (`prisma migrate deploy`).
+Schema changes use `prisma/migrations/`. Deploy runs `deploy/migrate-db.sh`, which calls `prisma migrate deploy`.
 
-**Upgrade with existing DB (already had schema via `db push`):** if `orderNumber` was added manually or via an old backfill script, mark the migration as applied once:
+If the production DB was created earlier with `db push` (no `_prisma_migrations` table), the first deploy after this change may log **P3005** and then **baseline** automatically: it runs pending migration SQL (e.g. `orderNumber`), marks migrations as applied, and continues.
+
+Manual baseline (only if deploy failed mid-way):
 
 ```bash
 cd /opt/ai-sub-sell/app
+pnpm exec prisma db execute --file prisma/migrations/20260529120000_add_order_number/migration.sql
 pnpm exec prisma migrate resolve --applied 20260529120000_add_order_number
+pnpm exec prisma migrate deploy
 ```
 
-Then future deploys use `db:migrate` only.
-
-**Fresh local database:** use `pnpm db:push` or `pnpm db:migrate:dev` after cloning (empty DB needs full schema first — `db:push` is simplest locally).
+**Fresh local database:** use `pnpm db:push` or `pnpm db:migrate:dev` (empty DB still needs full schema first — `db:push` is simplest locally).
 
 ## 7. Logs
 

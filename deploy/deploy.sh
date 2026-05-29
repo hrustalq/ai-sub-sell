@@ -134,12 +134,7 @@ echo "Generating Prisma client..."
 pnpm exec prisma generate
 
 echo "Applying database migrations..."
-if [[ -d prisma/migrations ]] && compgen -G "prisma/migrations/*" >/dev/null; then
-  pnpm run db:migrate
-else
-  echo "No migrations found; using db push (create migrations for production when ready)."
-  pnpm run db:push
-fi
+bash "$SCRIPT_DIR/migrate-db.sh"
 
 service_stopped=0
 APP_PORT="${PORT:-3000}"

@@ -38,7 +38,7 @@ TELEGRAM_WEBHOOK_SECRET=random-secret-with-letters-digits-underscore-hyphen-only
 
 `TELEGRAM_BOT_USERNAME` is the public @username (no `@`) — used for buyer links on the website order page (`?start=order_<uuid>`).
 
-**Existing database after upgrade:** run `pnpm db:migrate` (migration `20260529120000_add_order_number` backfills `orderNumber` automatically).
+**Existing database after upgrade:** production deploy runs migrations automatically (`20260529120000_add_order_number` adds and backfills `orderNumber`). First deploy on a DB that used `db push` is baselined in `deploy/migrate-db.sh`.
 
 ## Website buyers
 
