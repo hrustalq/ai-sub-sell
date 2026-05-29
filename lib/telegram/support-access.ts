@@ -111,7 +111,7 @@ export async function assignTelegramUserId(
     return {
       ok: false,
       error:
-        "Сначала отправьте /start боту поддержки в Telegram — так мы подтвердим ваш аккаунт",
+        "Сначала отправьте /start боту в Telegram — так мы подтвердим ваш аккаунт",
     };
   }
 

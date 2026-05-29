@@ -37,6 +37,7 @@ export async function getSupportOrders() {
 
     return {
       id: order.id,
+      orderNumber: order.orderNumber,
       status: order.status,
       planName: order.planName,
       amount: order.amount,
@@ -58,6 +59,7 @@ export async function getSupportOrder(orderId: string) {
     where: { id: orderId },
     select: {
       id: true,
+      orderNumber: true,
       status: true,
       planId: true,
       planName: true,

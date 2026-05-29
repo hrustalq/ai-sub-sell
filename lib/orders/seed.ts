@@ -15,6 +15,16 @@ export const SEED_ORDER_IDS = {
   guest: "seed-order-guest",
 } as const;
 
+/** Human-readable numbers for dev (8 chars, valid alphabet). */
+export const SEED_ORDER_NUMBERS = {
+  needsReply: "NEEDREPL",
+  unreadBuyer: "UNREAD01",
+  allRead: "ALLREAD1",
+  pending: "PEND0001",
+  canceled: "CNCL0001",
+  guest: "GUEST001",
+} as const;
+
 export const SEED_GUEST_ACCESS_TOKEN = "seed-guest-order-token-dev-only";
 
 /** Dev-only magic-link tokens (also work without login). */
@@ -150,6 +160,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
     data: [
       {
         id: SEED_ORDER_IDS.needsReply,
+        orderNumber: SEED_ORDER_NUMBERS.needsReply,
         userId: buyerId,
         buyerEmail,
         accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.needsReply]),
@@ -164,6 +175,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
       },
       {
         id: SEED_ORDER_IDS.unreadBuyer,
+        orderNumber: SEED_ORDER_NUMBERS.unreadBuyer,
         userId: buyerId,
         buyerEmail,
         accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.unreadBuyer]),
@@ -178,6 +190,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
       },
       {
         id: SEED_ORDER_IDS.allRead,
+        orderNumber: SEED_ORDER_NUMBERS.allRead,
         userId: buyerId,
         buyerEmail,
         accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.allRead]),
@@ -192,6 +205,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
       },
       {
         id: SEED_ORDER_IDS.pending,
+        orderNumber: SEED_ORDER_NUMBERS.pending,
         userId: buyerId,
         buyerEmail,
         accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.pending]),
@@ -206,6 +220,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
       },
       {
         id: SEED_ORDER_IDS.canceled,
+        orderNumber: SEED_ORDER_NUMBERS.canceled,
         userId: buyerId,
         buyerEmail,
         accessTokenHash: hashAccessToken(SEED_ORDER_ACCESS_TOKENS[SEED_ORDER_IDS.canceled]),
@@ -219,6 +234,7 @@ export async function seedDemoOrders(db: PrismaClient): Promise<void> {
       },
       {
         id: SEED_ORDER_IDS.guest,
+        orderNumber: SEED_ORDER_NUMBERS.guest,
         userId: null,
         buyerEmail: "guest-buyer@example.com",
         accessTokenHash: hashAccessToken(SEED_GUEST_ACCESS_TOKEN),

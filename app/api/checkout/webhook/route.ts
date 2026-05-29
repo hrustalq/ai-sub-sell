@@ -40,6 +40,7 @@ export async function POST(req: Request) {
         },
         select: {
           id: true,
+          orderNumber: true,
           planName: true,
           amount: true,
           currency: true,
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
               id: welcomeId,
               orderId,
               author: "seller",
-              body: "Спасибо за оплату! Мы подготовим данные доступа и разместим их на этой странице. Если есть вопросы — напишите здесь.",
+              body: "Спасибо за оплату! Данные доступа — на странице заказа и в письме. В Telegram отправьте номер заказа (ABCD-EFGH) или откройте ссылку с сайта.",
             },
           })
           .catch(() => null);

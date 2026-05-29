@@ -5,11 +5,11 @@ import { telegramFetch } from "@/lib/telegram/telegram-fetch";
 const log = createLogger("telegram-webhooks");
 const TELEGRAM_API = "https://api.telegram.org";
 
-export type TelegramBotLabel = "sell" | "support";
+export type TelegramBotLabel = "sell";
 
 export type TelegramBotWebhookConfig = {
   label: TelegramBotLabel;
-  tokenEnv: "TELEGRAM_SELL_BOT_TOKEN" | "TELEGRAM_SUPPORT_BOT_TOKEN";
+  tokenEnv: "TELEGRAM_SELL_BOT_TOKEN";
   webhookPath: string;
 };
 
@@ -18,11 +18,6 @@ export const TELEGRAM_BOT_WEBHOOKS: TelegramBotWebhookConfig[] = [
     label: "sell",
     tokenEnv: "TELEGRAM_SELL_BOT_TOKEN",
     webhookPath: "/api/telegram/sell/webhook",
-  },
-  {
-    label: "support",
-    tokenEnv: "TELEGRAM_SUPPORT_BOT_TOKEN",
-    webhookPath: "/api/telegram/support/webhook",
   },
 ];
 
@@ -263,17 +258,11 @@ export async function ensureTelegramWebhooks(
 }
 
 async function warmTelegramBots(): Promise<void> {
-  const {
-    ensureSellBotInitialized,
-    ensureSupportBotInitialized,
-    isSellBotEnabled,
-    isSupportBotEnabled,
-  } = await import("@/lib/telegram/bots");
+  const { ensureSellBotInitialized, isSellBotEnabled } = await import("@/lib/telegram/bots");
 
-  const tasks: Promise<void>[] = [];
-  if (isSellBotEnabled()) tasks.push(ensureSellBotInitialized());
-  if (isSupportBotEnabled()) tasks.push(ensureSupportBotInitialized());
-  await Promise.all(tasks);
+  if (isSellBotEnabled()) {
+    await ensureSellBotInitialized();
+  }
 }
 
 export async function runTelegramStartup(): Promise<void> {

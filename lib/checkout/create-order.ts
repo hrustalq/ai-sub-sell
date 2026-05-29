@@ -10,6 +10,7 @@ import {
 import { resolveBuyerUserId } from "@/lib/users/placeholder";
 import { absoluteUrl } from "@/lib/site-url";
 import { createLogger, logError } from "@/lib/logger";
+import { generateUniqueOrderNumber } from "@/lib/orders/order-number";
 import { createPayment } from "@/lib/yookassa";
 
 const log = createLogger("checkout");
@@ -52,12 +53,14 @@ export async function createCheckoutOrder(
   const userId = await resolveBuyerUserId(input.sessionUserId, buyerEmail);
 
   const orderId = crypto.randomUUID();
+  const orderNumber = await generateUniqueOrderNumber();
   const accessToken = generateOrderAccessToken();
   const orderUrl = absoluteUrl(`/orders/${orderId}?token=${accessToken}`);
 
   await db.order.create({
     data: {
       id: orderId,
+      orderNumber,
       userId,
       buyerEmail,
       buyerTelegramUserId: input.buyerTelegramUserId ?? undefined,

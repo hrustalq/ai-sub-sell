@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getOrderAccessContext } from "@/lib/orders/access";
 import { getOrderForBuyerPage, getOrderMessages } from "@/lib/orders/queries";
 import { getOrderUnreadCount, markOrderMessagesRead } from "@/lib/orders/read-state";
+import { formatOrderNumber } from "@/lib/orders/order-number";
+import { getTelegramBotLabel, getTelegramOrderDeepLink } from "@/lib/telegram/links";
 import { OrderExperience } from "./order-experience";
 
 export default async function OrderPage({
@@ -19,15 +21,20 @@ export default async function OrderPage({
     notFound();
   }
 
-  const [order, messages, unreadCount] = await Promise.all([
-    getOrderForBuyerPage(orderId),
-    getOrderMessages(orderId),
-    getOrderUnreadCount(orderId, access.authorRole),
-  ]);
-
+  const order = await getOrderForBuyerPage(orderId);
   if (!order) notFound();
 
-  await markOrderMessagesRead(orderId, access.authorRole);
+  const isStaffView = access.canManageFulfillment;
+  const [messages, unreadCount] = isStaffView
+    ? await Promise.all([
+        getOrderMessages(orderId),
+        getOrderUnreadCount(orderId, access.authorRole),
+      ])
+    : [[], 0];
+
+  if (isStaffView) {
+    await markOrderMessagesRead(orderId, access.authorRole);
+  }
 
   return (
     <OrderExperience
@@ -44,6 +51,9 @@ export default async function OrderPage({
       accessToken={token ?? null}
       canManageFulfillment={access.canManageFulfillment}
       authorRole={access.authorRole}
+      telegramBotLabel={getTelegramBotLabel()}
+      telegramBotUrl={getTelegramOrderDeepLink(orderId)}
+      orderNumberLabel={formatOrderNumber(order.orderNumber)}
     />
   );
 }

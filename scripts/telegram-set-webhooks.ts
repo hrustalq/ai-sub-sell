@@ -1,5 +1,5 @@
 /**
- * Register Telegram webhooks for sell and support bots.
+ * Register Telegram webhook for the unified bot.
  * Usage: pnpm telegram:webhooks
  */
 import "./load-env";
@@ -19,7 +19,7 @@ async function main() {
   });
 
   if (result.bots.length === 0) {
-    log.error("Set TELEGRAM_SELL_BOT_TOKEN and/or TELEGRAM_SUPPORT_BOT_TOKEN");
+    log.error("Set TELEGRAM_SELL_BOT_TOKEN");
     process.exit(1);
   }
 

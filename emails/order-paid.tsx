@@ -6,16 +6,18 @@ import { BaseEmail, emailStyles } from "./_base";
 interface OrderPaidEmailProps {
   planName: string;
   amountFormatted: string;
-  orderId: string;
+  orderNumber: string;
   orderUrl: string;
+  telegramBotUrl: string | null;
   signInUrl: string;
 }
 
 export function OrderPaidEmail({
   planName,
   amountFormatted,
-  orderId,
+  orderNumber,
   orderUrl,
+  telegramBotUrl,
   signInUrl,
 }: OrderPaidEmailProps) {
   return (
@@ -25,15 +27,22 @@ export function OrderPaidEmail({
       </Text>
       <Text style={emailStyles.paragraph}>
         Мы получили оплату <strong>{amountFormatted}</strong>. Номер заказа:{" "}
-        <strong>{orderId}</strong>.
+        <strong>{orderNumber}</strong>.
       </Text>
       <Text style={emailStyles.paragraph}>
-        Данные доступа и переписка с поддержкой доступны на странице заказа. Вы также
-        можете войти по email без пароля — все ваши заказы будут в личном кабинете.
+        Данные доступа появятся на странице заказа и придут на email после выдачи.
+        Вопросы по заказу — в Telegram-боте: отправьте номер <strong>{orderNumber}</strong>{" "}
+        или нажмите кнопку ниже.
       </Text>
 
+      {telegramBotUrl ? (
+        <Button href={telegramBotUrl} style={emailStyles.button}>
+          Открыть чат в Telegram
+        </Button>
+      ) : null}
+
       <Button href={orderUrl} style={emailStyles.button}>
-        Открыть заказ
+        Открыть заказ на сайте
       </Button>
 
       <Hr style={emailStyles.hr} />

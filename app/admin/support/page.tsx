@@ -10,6 +10,7 @@ export default async function AdminSupportPage() {
 
   const data: SupportOrderRecord[] = orders.map((order) => ({
     id: order.id,
+    orderNumber: order.orderNumber,
     status: order.status,
     planName: order.planName,
     amount: order.amount,

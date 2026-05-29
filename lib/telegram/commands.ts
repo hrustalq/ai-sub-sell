@@ -1,80 +1,49 @@
+import { Bot } from "grammy";
 import { createLogger, logError } from "@/lib/logger/core";
-import { getSellBotToken, getSupportBotToken } from "@/lib/telegram/config";
-import { telegramFetch } from "@/lib/telegram/telegram-fetch";
+import { getSellBotToken } from "@/lib/telegram/config";
+import { telegramBotClientConfig } from "@/lib/telegram/telegram-fetch";
 
 const log = createLogger("telegram-commands");
-const TELEGRAM_API = "https://api.telegram.org";
 
 export type TelegramBotCommand = {
   command: string;
   description: string;
 };
 
-export const SELL_BOT_COMMANDS: TelegramBotCommand[] = [
+/** Unified bot: buyer + staff commands (staff-only commands are gated in handlers). */
+export const BOT_COMMANDS: TelegramBotCommand[] = [
   { command: "start", description: "Начало работы" },
   { command: "catalog", description: "Каталог тарифов" },
   { command: "orders", description: "Мои заказы" },
   { command: "support", description: "Чат с поддержкой" },
   { command: "email", description: "Привязать email" },
+  { command: "link", description: "Привязать заказ по номеру" },
+  { command: "inbox", description: "Входящие заказы (поддержка)" },
+  { command: "tickets", description: "Обращения без заказа (поддержка)" },
+  { command: "staff_help", description: "Справка для поддержки" },
   { command: "help", description: "Справка по командам" },
 ];
 
-export const SUPPORT_BOT_COMMANDS: TelegramBotCommand[] = [
-  { command: "start", description: "Начало работы" },
-  { command: "orders", description: "Список заказов" },
-  { command: "chats", description: "Обращения без заказа" },
-  { command: "help", description: "Справка по командам" },
-];
-
-type BotCommandsConfig = {
-  label: "sell" | "support";
-  token: string;
-  commands: TelegramBotCommand[];
-};
-
-async function setBotCommands(config: BotCommandsConfig): Promise<boolean> {
-  const res = await telegramFetch(`${TELEGRAM_API}/bot${config.token}/setMyCommands`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ commands: config.commands }),
-  });
-
-  const data = (await res.json()) as { ok: boolean; description?: string };
-  if (!data.ok) {
-    log.error(
-      { label: config.label, description: data.description ?? data },
-      "setMyCommands failed",
-    );
+export async function registerBotCommands(bot: Bot): Promise<boolean> {
+  try {
+    await bot.api.setMyCommands(BOT_COMMANDS);
+    log.info({ commands: BOT_COMMANDS.length }, "bot commands registered");
+    return true;
+  } catch (err) {
+    logError(log, "setMyCommands failed", err);
     return false;
   }
-
-  log.info({ label: config.label, commands: config.commands.length }, "bot commands registered");
-  return true;
 }
 
 export async function registerTelegramBotCommands(): Promise<boolean> {
-  const sellToken = getSellBotToken();
-  const supportToken = getSupportBotToken();
-
-  if (!sellToken && !supportToken) {
-    log.debug("telegram commands skipped — no bot tokens configured");
+  const token = getSellBotToken();
+  if (!token) {
+    log.debug("telegram commands skipped — no bot token configured");
     return true;
   }
 
-  const tasks: Promise<boolean>[] = [];
-
-  if (sellToken) {
-    tasks.push(setBotCommands({ label: "sell", token: sellToken, commands: SELL_BOT_COMMANDS }));
-  }
-
-  if (supportToken) {
-    tasks.push(
-      setBotCommands({ label: "support", token: supportToken, commands: SUPPORT_BOT_COMMANDS }),
-    );
-  }
-
-  const results = await Promise.all(tasks);
-  return results.every(Boolean);
+  const bot = new Bot(token, telegramBotClientConfig);
+  return registerBotCommands(bot);
 }
 
 export async function runTelegramCommandRegistration(): Promise<void> {

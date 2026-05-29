@@ -199,6 +199,7 @@ model SupportConversationMessageRead {
 
 model Order {
   id                   String         @id
+  orderNumber          String         @unique
   userId               String?
   buyerEmail           String
   buyerTelegramUserId  String?

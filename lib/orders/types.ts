@@ -1,5 +1,6 @@
 export type OrderRecord = {
   id: string;
+  orderNumber: string;
   planId: string;
   planName: string;
   amount: number;

@@ -1,52 +1,60 @@
-# Telegram bots
+# Telegram bot
 
-Two bots mirror the website: **sell** (buyers) and **support** (staff).
+One bot handles sales and support: catalog, checkout, buyer orders, and staff workflows.
 
-## Sell bot
+## Buyers
 
 - Browse catalog (Codex / Cursor / Claude, tiers, durations)
 - Checkout via YooKassa (same flow as the site)
 - List orders, pay pending orders, chat with support
+- General support chat via `/support` (not tied to an order)
 - Notifications on payment, support replies, and fulfillment
 
 Commands: `/start`, `/catalog`, `/orders`, `/support`, `/email`, `/help`
 
-Support bot commands: `/start`, `/orders`, `/chats`, `/help` (plus `/order_<uuid>` and `/chat_<uuid>` to open a specific thread).
-
-Command hints appear in Telegram’s menu when you tap `/` (registered automatically on startup and when running `pnpm telegram:poll`).
-
 Email linking requires a 6-digit verification code sent to the inbox.
 
-## Support bot
+## Staff (support)
 
-- Order list with unread indicators (same data as `/admin/support` on the web)
-- General conversations not tied to orders (`/admin/support/chats`)
+- Order list with unread indicators (`/inbox` — same data as `/admin/support` on the web)
+- General conversations not tied to orders (`/tickets` — `/admin/support/chats`)
 - Open order, reply in chat, paste fulfillment credentials
 - Notifications for new Telegram orders and buyer messages
 
-Access is limited to staff with the support role, **core admins** (`CORE_ADMIN_EMAILS`), and admins who linked their Telegram ID in the admin panel (**Админ → Telegram**), plus legacy IDs in `TELEGRAM_SUPPORT_USER_IDS`. Staff must send `/start` to the support bot once so their `chat_id` is stored.
+Access is limited to staff with the support role, **core admins** (`CORE_ADMIN_EMAILS`), and admins who linked their Telegram ID in the admin panel (**Админ → Telegram**), plus legacy IDs in `TELEGRAM_SUPPORT_USER_IDS`. Staff must send `/start` to the bot once so their `chat_id` is stored.
 
-Commands: `/start`, `/orders`, `/order_<uuid>`, `/chats`, `/chat_<uuid>`, `/help`
+Staff commands: `/inbox`, `/tickets`, `/staff_help`, `/order_<uuid>`, `/chat_<uuid>` (deep links from notifications).
 
-## Sell bot — general support chat
-
-Buyers can open a support conversation not linked to any order via `/support` in the sell bot. Order chats (`💬 Чат с поддержкой` inside a specific order) remain separate and continue to work as before.
+Command hints appear in Telegram’s menu when you tap `/` (registered automatically on startup and when running `pnpm telegram:poll`).
 
 ## Environment
 
 ```env
 TELEGRAM_SELL_BOT_TOKEN=...
-TELEGRAM_SUPPORT_BOT_TOKEN=...
+TELEGRAM_BOT_USERNAME=YourShopBot
 TELEGRAM_SUPPORT_USER_IDS=123456789,987654321
 TELEGRAM_WEBHOOK_SECRET=random-secret-with-letters-digits-underscore-hyphen-only
 ```
+
+`TELEGRAM_BOT_USERNAME` is the public @username (no `@`) — used for buyer links on the website order page (`?start=order_<uuid>`).
+
+**Existing database after upgrade:** run `pnpm db:migrate` (migration `20260529120000_add_order_number` backfills `orderNumber` automatically).
+
+## Website buyers
+
+- Each order gets a human-readable number (e.g. `ABCD-EFGH`) on `/orders/<id>` and in emails.
+- Credentials appear on the order page and are emailed when staff issues fulfillment.
+- Order chat on the website is **staff-only** (`/admin/support`). Buyers link the order in Telegram:
+  - Open the bot link from the order page (`?start=order_<uuid>` opens chat immediately), or
+  - Send the order number as a message, or `/link ABCD-EFGH`.
+- Optional: `/email` with checkout email if the number is tied to another inbox.
 
 `SITE_URL` / `BETTER_AUTH_URL` must be the public HTTPS origin used for webhooks and payment return URLs.
 
 ## Local development
 
-1. Create bots in [@BotFather](https://t.me/BotFather).
-2. Add tokens and your Telegram user ID to `.env`.
+1. Create a bot in [@BotFather](https://t.me/BotFather).
+2. Add the token and your Telegram user ID to `.env`.
 3. Run long polling (no HTTPS):
 
 ```bash
@@ -55,7 +63,7 @@ pnpm telegram:poll
 
 ## Production webhooks
 
-In production, the app registers Telegram webhooks automatically on server startup when `SITE_URL` is HTTPS and bot tokens are configured. Restarting the service after deploy is enough.
+In production, the app registers the Telegram webhook automatically on server startup when `SITE_URL` is HTTPS and `TELEGRAM_SELL_BOT_TOKEN` is set. Restarting the service after deploy is enough.
 
 You can still register manually:
 
@@ -70,7 +78,6 @@ pnpm telegram:webhooks
 This registers:
 
 - `{SITE_URL}/api/telegram/sell/webhook`
-- `{SITE_URL}/api/telegram/support/webhook`
 
 Set `TELEGRAM_AUTO_WEBHOOKS=false` to disable startup registration, or `TELEGRAM_AUTO_WEBHOOKS=true` to enable it outside production (for example with an HTTPS tunnel).
 
@@ -121,15 +128,6 @@ Clear the backlog and cap parallel deliveries:
 pnpm telegram:webhooks   # force setWebhook + drop_pending_updates + max_connections=1
 ```
 
-Or only for the support bot:
-
-```bash
-source /opt/ai-sub-sell/shared/.env
-curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_SUPPORT_BOT_TOKEN}/setWebhook" \
-  -H "Content-Type: application/json" \
-  -d "{\"url\":\"https://ai-sub.store/api/telegram/support/webhook\",\"secret_token\":\"${TELEGRAM_WEBHOOK_SECRET}\",\"drop_pending_updates\":true,\"max_connections\":1}"
-```
-
 Then send a fresh `/start` to the bot and run `pnpm telegram:check` again.
 
 ### `Connect Timeout Error` to `api.telegram.org` (IPv6 then IPv4)
@@ -171,4 +169,5 @@ Expected if `telegram:check` runs while the service is still starting. Wait a fe
 
 - Orders created in Telegram store `buyerTelegramUserId` for notifications.
 - Web checkout is unchanged; Telegram uses the same `createCheckoutOrder` and order chat tables.
-- YooKassa webhook still drives payment status; the sell bot is notified after `payment.succeeded`.
+- YooKassa webhook still drives payment status; the bot is notified after `payment.succeeded`.
+- Remove the old support-bot webhook in BotFather if you previously used a second bot: delete that bot or call `deleteWebhook` on its token so Telegram stops sending to `/api/telegram/support/webhook`.

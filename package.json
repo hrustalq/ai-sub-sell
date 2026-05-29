@@ -10,6 +10,7 @@
     "db:seed": "npx tsx prisma/seed.ts",
     "seed:production": "bash deploy/seed.sh",
     "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
     "telegram:poll": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",
     "telegram:webhooks": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-set-webhooks.ts",

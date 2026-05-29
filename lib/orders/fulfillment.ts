@@ -2,6 +2,7 @@ import "server-only";
 
 import db from "@/lib/db";
 import { createLogger, logError } from "@/lib/logger";
+import { sendOrderFulfillmentEmail } from "@/lib/orders/emails";
 import { notifyBuyerFulfillmentUpdated } from "@/lib/telegram/notify";
 
 const log = createLogger("fulfillment");
@@ -17,9 +18,14 @@ export async function updateOrderFulfillment(orderId: string, productContent: st
     data: { productContent: trimmed },
   });
 
-  await notifyBuyerFulfillmentUpdated(orderId).catch((err) =>
-    logError(log, "telegram notify failed", err, { orderId }),
-  );
+  await Promise.all([
+    notifyBuyerFulfillmentUpdated(orderId).catch((err) =>
+      logError(log, "telegram notify failed", err, { orderId }),
+    ),
+    sendOrderFulfillmentEmail(orderId).catch((err) =>
+      logError(log, "fulfillment email failed", err, { orderId }),
+    ),
+  ]);
 
   return { ok: true as const };
 }

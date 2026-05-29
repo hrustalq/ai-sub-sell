@@ -1,5 +1,6 @@
 import { formatPrice } from "@/lib/plans/format";
 import { ORDER_STATUS_LABELS } from "@/lib/orders/constants";
+import { formatOrderNumber } from "@/lib/orders/order-number";
 
 export function formatOrderStatus(status: string): string {
   return ORDER_STATUS_LABELS[status as keyof typeof ORDER_STATUS_LABELS] ?? status;
@@ -7,6 +8,7 @@ export function formatOrderStatus(status: string): string {
 
 export function formatOrderSummary(order: {
   id: string;
+  orderNumber: string;
   planName: string;
   amount: number;
   currency: string;
@@ -15,6 +17,7 @@ export function formatOrderSummary(order: {
 }): string {
   return [
     `📦 <b>${escapeHtml(order.planName)}</b>`,
+    `Номер заказа: <b>${escapeHtml(formatOrderNumber(order.orderNumber))}</b>`,
     `Сумма: ${formatPrice(order.amount, order.currency)}`,
     `Статус: ${formatOrderStatus(order.status)}`,
     `Email: ${escapeHtml(order.buyerEmail)}`,

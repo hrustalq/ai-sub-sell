@@ -39,11 +39,13 @@ export function NewMessageEmail({
         «{preview}»
       </Text>
       <Text style={emailStyles.paragraph}>
-        Сообщение оставалось непрочитанным более 10 минут — напоминаем ответить в чате.
+        {recipientRole === "buyer"
+          ? "Сообщение оставалось непрочитанным более 10 минут — ответьте в Telegram-боте (/orders)."
+          : "Сообщение оставалось непрочитанным более 10 минут — ответьте в панели поддержки."}
       </Text>
 
       <Button href={orderUrl} style={emailStyles.button}>
-        {recipientRole === "buyer" ? "Открыть чат" : "Ответить в поддержке"}
+        {recipientRole === "buyer" ? "Открыть Telegram-бот" : "Ответить в поддержке"}
       </Button>
     </BaseEmail>
   );

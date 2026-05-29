@@ -6,11 +6,9 @@ import { formatPrice } from "@/lib/plans/format";
 import { absoluteUrl } from "@/lib/site-url";
 import { routes } from "@/lib/routes";
 import { sendTelegramMessage } from "@/lib/telegram/api";
-import {
-  getSellBotToken,
-  getSupportBotToken,
-} from "@/lib/telegram/config";
+import { getSellBotToken } from "@/lib/telegram/config";
 import { getSupportStaffChatIds } from "@/lib/telegram/support-access";
+import { formatOrderNumber } from "@/lib/orders/order-number";
 import { escapeHtml, formatOrderStatus, truncate } from "@/lib/telegram/format";
 
 export async function notifyBuyerOrderPaid(orderId: string): Promise<void> {
@@ -133,7 +131,7 @@ export async function notifySupportOfBuyerMessage(params: {
   planName: string;
   body: string;
 }): Promise<void> {
-  const token = getSupportBotToken();
+  const token = getSellBotToken();
   if (!token) return;
 
   const chatIds = await getSupportStaffChatIds();
@@ -141,13 +139,18 @@ export async function notifySupportOfBuyerMessage(params: {
 
   const order = await db.order.findUnique({
     where: { id: params.orderId },
-    select: { buyerEmail: true, status: true },
+    select: { buyerEmail: true, status: true, orderNumber: true },
   });
+
+  const orderLabel = order?.orderNumber
+    ? formatOrderNumber(order.orderNumber)
+    : params.orderId;
 
   const text = [
     `💬 <b>Новое сообщение от покупателя</b>`,
     "",
-    `Заказ: <code>${params.orderId}</code>`,
+    `Заказ: <b>${escapeHtml(orderLabel)}</b>`,
+    `ID: <code>${params.orderId}</code>`,
     `Тариф: ${escapeHtml(params.planName)}`,
     order ? `Email: ${escapeHtml(order.buyerEmail)}` : "",
     order ? `Статус: ${formatOrderStatus(order.status)}` : "",
@@ -167,7 +170,7 @@ export async function notifySupportOfBuyerMessage(params: {
 }
 
 export async function notifySupportNewTelegramOrder(orderId: string): Promise<void> {
-  const token = getSupportBotToken();
+  const token = getSellBotToken();
   if (!token) return;
 
   const chatIds = await getSupportStaffChatIds();
@@ -177,6 +180,7 @@ export async function notifySupportNewTelegramOrder(orderId: string): Promise<vo
     where: { id: orderId },
     select: {
       id: true,
+      orderNumber: true,
       planName: true,
       amount: true,
       currency: true,
@@ -189,6 +193,7 @@ export async function notifySupportNewTelegramOrder(orderId: string): Promise<vo
   const text = [
     `🛒 <b>Новый заказ из Telegram</b>`,
     "",
+    `Номер: <b>${escapeHtml(formatOrderNumber(order.orderNumber))}</b>`,
     `Тариф: ${escapeHtml(order.planName)}`,
     `Сумма: ${formatPrice(order.amount, order.currency)}`,
     `Email: ${escapeHtml(order.buyerEmail)}`,
@@ -244,7 +249,7 @@ export async function notifySupportOfGeneralBuyerMessage(params: {
   buyerEmail: string | null;
   body: string;
 }): Promise<void> {
-  const token = getSupportBotToken();
+  const token = getSellBotToken();
   if (!token) return;
 
   const chatIds = await getSupportStaffChatIds();

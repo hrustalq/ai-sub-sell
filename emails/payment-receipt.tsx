@@ -5,14 +5,14 @@ import { BaseEmail, emailStyles } from "./_base";
 interface PaymentReceiptEmailProps {
   planName: string;
   amountFormatted: string;
-  orderId: string;
+  orderNumber: string;
   paidAt: string;
 }
 
 export function PaymentReceiptEmail({
   planName,
   amountFormatted,
-  orderId,
+  orderNumber,
   paidAt,
 }: PaymentReceiptEmailProps) {
   return (
@@ -25,7 +25,7 @@ export function PaymentReceiptEmail({
         <br />
         Сумма: <strong>{amountFormatted}</strong>
         <br />
-        Заказ: <strong>{orderId}</strong>
+        Номер заказа: <strong>{orderNumber}</strong>
         <br />
         Дата: <strong>{paidAt}</strong>
       </Text>

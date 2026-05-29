@@ -1,6 +1,7 @@
 import type { InlineKeyboardButton } from "grammy/types";
 import type { Plan } from "@/lib/plans/types";
 import { formatPrice } from "@/lib/plans/format";
+import { formatOrderNumber } from "@/lib/orders/order-number";
 import { getDiscountPercent, groupPlansByProvider } from "@/lib/plans/grouping";
 
 const CB = {
@@ -59,11 +60,11 @@ export function planKeyboard(plans: Plan[]): InlineKeyboardButton[][] {
 }
 
 export function orderListKeyboard(
-  orders: { id: string; planName: string; status: string }[],
+  orders: { id: string; orderNumber: string; planName: string; status: string }[],
 ): InlineKeyboardButton[][] {
   const rows = orders.slice(0, 10).map((o) => [
     {
-      text: `${o.planName} (${o.status})`,
+      text: `${formatOrderNumber(o.orderNumber)} · ${o.planName}`,
       callback_data: CB.order(o.id),
     },
   ]);

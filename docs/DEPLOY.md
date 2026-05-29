@@ -205,7 +205,7 @@ Prefer `sudo -u ai-sub-sell` for all app commands.
 Deploy will:
 
 1. Back up the existing DB (keeps last 10 backups)
-2. Run migrations (`db:migrate` if `prisma/migrations` exists, else `db:push`)
+2. Run migrations (`pnpm db:migrate` — includes `orderNumber` backfill in SQL; falls back to `db:push` only when no `prisma/migrations` exist)
 3. Build and restart the systemd unit
 
 It **does not** delete or replace `/var/lib/ai-sub-sell/data/`.
@@ -239,6 +239,21 @@ SEED_SKIP_DEMO_ORDERS=0 sudo -u ai-sub-sell bash /opt/ai-sub-sell/app/deploy/see
 - `prisma/dev.db` remains for local development and is gitignored.
 - Each deploy copies a timestamped backup before migrations.
 - Do not run `git clean -fdx` on paths containing production data.
+
+### Migrations
+
+Schema changes use `prisma/migrations/`. Deploy runs `pnpm db:migrate` (`prisma migrate deploy`).
+
+**Upgrade with existing DB (already had schema via `db push`):** if `orderNumber` was added manually or via an old backfill script, mark the migration as applied once:
+
+```bash
+cd /opt/ai-sub-sell/app
+pnpm exec prisma migrate resolve --applied 20260529120000_add_order_number
+```
+
+Then future deploys use `db:migrate` only.
+
+**Fresh local database:** use `pnpm db:push` or `pnpm db:migrate:dev` after cloning (empty DB needs full schema first — `db:push` is simplest locally).
 
 ## 7. Logs
 

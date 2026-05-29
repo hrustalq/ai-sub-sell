@@ -1,5 +1,6 @@
 export type SupportOrderRecord = {
   id: string;
+  orderNumber: string;
   status: string;
   planName: string;
   amount: number;
@@ -25,6 +26,7 @@ export type SupportOrderRecord = {
 
 export type SupportOrderDetailRecord = {
   id: string;
+  orderNumber: string;
   status: string;
   planId: string;
   planName: string;

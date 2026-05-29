@@ -3,7 +3,7 @@ import "server-only";
 import { createElement } from "react";
 import { createHash, randomInt, timingSafeEqual } from "crypto";
 import db from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { isSmtpConfigured, sendEmail } from "@/lib/email";
 import { pageTitle } from "@/lib/brand";
 import { isValidEmail } from "@/lib/orders/access";
 import { normalizeEmail } from "@/lib/users/placeholder";
@@ -64,6 +64,14 @@ export async function requestTelegramEmailVerification(
   const normalized = normalizeEmail(email);
   if (!isValidEmail(normalized)) {
     return { ok: false, error: "Укажите корректный email" };
+  }
+
+  if (!isSmtpConfigured()) {
+    log.error("telegram email verification skipped — SMTP not configured");
+    return {
+      ok: false,
+      error: "Отправка почты временно недоступна. Попробуйте позже или напишите в поддержку",
+    };
   }
 
   const existing = await db.telegramEmailVerification.findUnique({
@@ -137,8 +145,12 @@ export async function confirmTelegramEmailVerification(
   code: string,
 ): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
   const trimmed = code.trim();
-  if (!/^\d{6}$/.test(trimmed)) {
-    return { ok: false, error: "Введите 6-значный код из письма" };
+  const codePattern = new RegExp(`^\\d{${TELEGRAM_EMAIL_CODE_LENGTH}}$`);
+  if (!codePattern.test(trimmed)) {
+    return {
+      ok: false,
+      error: `Введите ${TELEGRAM_EMAIL_CODE_LENGTH}-значный код из письма`,
+    };
   }
 
   const pending = await db.telegramEmailVerification.findUnique({
@@ -191,6 +203,14 @@ export async function confirmTelegramEmailVerification(
   if (!linked.ok) {
     return linked;
   }
+
+  await db.order.updateMany({
+    where: {
+      buyerEmail: pending.email,
+      buyerTelegramUserId: null,
+    },
+    data: { buyerTelegramUserId: telegramUserId },
+  });
 
   await db.telegramEmailVerification.deleteMany({ where: { telegramUserId } });
 

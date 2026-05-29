@@ -1,13 +1,14 @@
-import type { Context } from "grammy";
-import { Bot, InlineKeyboard } from "grammy";
+import type { Bot, Context } from "grammy";
+import { InlineKeyboard } from "grammy";
 import { getSupportOrders } from "@/lib/support/queries";
-import { SITE_NAME } from "@/lib/brand";
-import { upsertTelegramAccount } from "@/lib/telegram/accounts";
-import { getSupportBotToken } from "@/lib/telegram/config";
-import { telegramBotClientConfig } from "@/lib/telegram/telegram-fetch";
 import { isSupportTelegramUser } from "@/lib/telegram/support-access";
 import { escapeHtml, formatOrderSummary, truncate } from "@/lib/telegram/format";
-import { supportOrderActionsKeyboard, supportOrderListKeyboard, supportGeneralChatActionsKeyboard, supportGeneralChatListKeyboard } from "@/lib/telegram/keyboards";
+import {
+  supportOrderActionsKeyboard,
+  supportOrderListKeyboard,
+  supportGeneralChatActionsKeyboard,
+  supportGeneralChatListKeyboard,
+} from "@/lib/telegram/keyboards";
 import {
   getOrderChatMessages,
   postSellerMessage,
@@ -26,16 +27,25 @@ import {
   type SupportBotState,
 } from "@/lib/telegram/session";
 import { orderWebUrl, supportConversationWebUrl, supportOrderWebUrl } from "@/lib/telegram/notify";
-import { catchBotErrors } from "@/lib/telegram/bots/catch";
 
 const PAGE_SIZE = 8;
 
-const SUPPORT_DENIED_MESSAGE = [
-  "У вас нет доступа к боту поддержки.",
+export const SUPPORT_DENIED_MESSAGE = [
+  "У вас нет доступа к разделу поддержки в боте.",
   "",
   "1. Получите Telegram ID через @userinfobot",
   "2. Привяжите ID в админ-панели: раздел «Telegram»",
   "3. Отправьте /start этому боту снова",
+].join("\n");
+
+export const SUPPORT_STAFF_HELP = [
+  "<b>Поддержка (сотрудники)</b>",
+  "/inbox — заказы с сообщениями",
+  "/tickets — обращения без заказа",
+  "/order_<code>uuid</code> — открыть заказ",
+  "/chat_<code>uuid</code> — открыть обращение",
+  "",
+  "В карточке заказа можно ответить покупателю или выдать доступ.",
 ].join("\n");
 
 async function requireSupport(ctx: Context): Promise<boolean> {
@@ -43,46 +53,9 @@ async function requireSupport(ctx: Context): Promise<boolean> {
   return isSupportTelegramUser(ctx.from.id);
 }
 
-export function createSupportBot(): Bot {
-  const token = getSupportBotToken();
-  if (!token) {
-    throw new Error("TELEGRAM_SUPPORT_BOT_TOKEN is not configured");
-  }
-
-  const bot = new Bot(token, telegramBotClientConfig);
-
-  catchBotErrors(bot, "support");
-
-  bot.use(async (ctx, next) => {
-    if (ctx.from) {
-      await upsertTelegramAccount(ctx.from, ctx.chat?.id ?? ctx.from.id);
-    }
-    await next();
-  });
-
-  bot.command("start", async (ctx) => {
-    if (!(await requireSupport(ctx))) {
-      await ctx.reply(SUPPORT_DENIED_MESSAGE);
-      return;
-    }
-    await clearSessionState(String(ctx.from!.id), "support");
-    await ctx.reply(
-      [
-        `🛟 <b>${SITE_NAME} — поддержка</b>`,
-        "",
-        "/orders — список заказов",
-        "/chats — обращения без заказа",
-        "/order_<code>uuid</code> — открыть заказ",
-        "/chat_<code>uuid</code> — открыть обращение",
-        "/help — справка",
-        "",
-        "В заказе можно ответить покупателю и выдать доступ.",
-      ].join("\n"),
-      { parse_mode: "HTML" },
-    );
-  });
-
-  bot.command("orders", async (ctx) => {
+/** Staff flows on the unified sell bot (session key remains "support"). */
+export function registerSupportHandlers(bot: Bot): void {
+  bot.command("inbox", async (ctx) => {
     if (!(await requireSupport(ctx))) {
       await ctx.reply(SUPPORT_DENIED_MESSAGE);
       return;
@@ -90,7 +63,7 @@ export function createSupportBot(): Bot {
     await showSupportOrders(ctx, 0);
   });
 
-  bot.command("chats", async (ctx) => {
+  bot.command("tickets", async (ctx) => {
     if (!(await requireSupport(ctx))) {
       await ctx.reply(SUPPORT_DENIED_MESSAGE);
       return;
@@ -98,23 +71,12 @@ export function createSupportBot(): Bot {
     await showSupportGeneralChats(ctx, 0);
   });
 
-  bot.command("help", async (ctx) => {
+  bot.command("staff_help", async (ctx) => {
     if (!(await requireSupport(ctx))) {
       await ctx.reply(SUPPORT_DENIED_MESSAGE);
       return;
     }
-    await ctx.reply(
-      [
-        "<b>Команды</b>",
-        "/orders — список заказов с непрочитанными сообщениями",
-        "/chats — обращения без заказа",
-        "/order_<code>uuid</code> — открыть заказ по ID",
-        "/chat_<code>uuid</code> — открыть обращение по ID",
-        "",
-        "В карточке заказа можно ответить покупателю или выдать доступ.",
-      ].join("\n"),
-      { parse_mode: "HTML" },
-    );
+    await ctx.reply(SUPPORT_STAFF_HELP, { parse_mode: "HTML" });
   });
 
   bot.hears(/^\/order_(.+)$/, async (ctx) => {
@@ -242,8 +204,11 @@ export function createSupportBot(): Bot {
     );
   });
 
-  bot.on("message:text", async (ctx) => {
-    if (!(await requireSupport(ctx))) return;
+  bot.on("message:text", async (ctx, next) => {
+    if (!(await requireSupport(ctx))) {
+      await next();
+      return;
+    }
 
     const telegramUserId = String(ctx.from!.id);
     const state = await getSessionState<SupportBotState>(telegramUserId, "support");
@@ -278,9 +243,13 @@ export function createSupportBot(): Bot {
       await ctx.reply("✅ Доступ выдан. Покупатель получит уведомление в Telegram.");
       return;
     }
-  });
 
-  return bot;
+    await next();
+  });
+}
+
+export async function clearSupportSession(telegramUserId: string): Promise<void> {
+  await clearSessionState(telegramUserId, "support");
 }
 
 async function showSupportOrders(ctx: Context, page: number, edit = false) {
@@ -320,6 +289,7 @@ async function showSupportOrder(ctx: Context, orderId: string, edit = false) {
     where: { id: orderId },
     select: {
       id: true,
+      orderNumber: true,
       planName: true,
       amount: true,
       currency: true,

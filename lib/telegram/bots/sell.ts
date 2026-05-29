@@ -32,11 +32,23 @@ import {
 import { orderWebUrl } from "@/lib/telegram/notify";
 import { catchBotErrors } from "@/lib/telegram/bots/catch";
 import {
+  clearSupportSession,
+  registerSupportHandlers,
+  SUPPORT_STAFF_HELP,
+} from "@/lib/telegram/bots/support-handlers";
+import { isSupportTelegramUser } from "@/lib/telegram/support-access";
+import {
   confirmTelegramEmailVerification,
   requestTelegramEmailVerification,
   TELEGRAM_EMAIL_CODE_LENGTH,
 } from "@/lib/telegram/email-verification";
 import { isValidEmail } from "@/lib/orders/access";
+import { formatOrderNumber, parseOrderNumberFromText } from "@/lib/orders/order-number";
+import {
+  linkOrderByNumber,
+  linkOrderToTelegramBuyer,
+  parseTelegramOrderStartPayload,
+} from "@/lib/telegram/link-order";
 import {
   ensureBuyerGeneralConversation,
   getBuyerGeneralChatMessages,
@@ -60,37 +72,73 @@ export function createSellBot(): Bot {
     await next();
   });
 
+  registerSupportHandlers(bot);
+
   bot.command("start", async (ctx) => {
-    await clearSessionState(String(ctx.from!.id), "sell");
-    await ctx.reply(
-      [
-        `👋 <b>${SITE_NAME}</b> — подписки Codex, Cursor, Claude`,
-        "",
-        "Выберите тариф, укажите email и оплатите через ЮKassa. Заказ и чат с поддержкой — прямо в боте.",
-        "",
-        "/catalog — каталог",
-        "/orders — мои заказы",
-        "/support — чат с поддержкой (без заказа)",
-        "/email — привязать email (с кодом из письма)",
-        "/help — справка",
-      ].join("\n"),
-      { parse_mode: "HTML" },
-    );
+    const telegramUserId = String(ctx.from!.id);
+    await clearSessionState(telegramUserId, "sell");
+    const isStaff = await isSupportTelegramUser(telegramUserId);
+    if (isStaff) {
+      await clearSupportSession(telegramUserId);
+    }
+
+    const startPayload = (ctx.message?.text ?? "")
+      .replace(/^\/start(?:@\w+)?\s*/i, "")
+      .trim();
+    if (startPayload) {
+      const parsed = parseTelegramOrderStartPayload(startPayload);
+      if (parsed) {
+        if ("orderId" in parsed) {
+          await attachOrderAndOpenChat(ctx, telegramUserId, parsed.orderId);
+        } else {
+          const linked = await linkOrderByNumber(telegramUserId, parsed.orderNumber);
+          if (linked.ok) {
+            await attachOrderAndOpenChat(ctx, telegramUserId, linked.order.id);
+          } else {
+            await ctx.reply(linked.error);
+          }
+        }
+        return;
+      }
+    }
+
+    const lines = [
+      `👋 <b>${SITE_NAME}</b> — подписки Codex, Cursor, Claude`,
+      "",
+      "Выберите тариф, укажите email и оплатите через ЮKassa. Заказ и чат с поддержкой — прямо в боте.",
+      "",
+      "/catalog — каталог",
+      "/orders — мои заказы",
+      "/support — чат с поддержкой (без заказа)",
+      "/email — привязать email (с кодом из письма)",
+      "/link — привязать заказ с сайта по номеру",
+      "/help — справка",
+    ];
+
+    if (isStaff) {
+      lines.push("", SUPPORT_STAFF_HELP);
+    }
+
+    await ctx.reply(lines.join("\n"), { parse_mode: "HTML" });
   });
 
   bot.command("help", async (ctx) => {
-    await ctx.reply(
-      [
-        "<b>Команды</b>",
-        "/catalog — выбрать тариф и оплатить",
-        "/orders — список заказов",
-        "/support — общий чат с поддержкой (не привязан к заказу)",
-        "/email your@mail.com — привязать email (код придёт на почту)",
-        "",
-        "После оплаты доступ появится в заказе. Вопросы — в чате заказа.",
-      ].join("\n"),
-      { parse_mode: "HTML" },
-    );
+    const lines = [
+      "<b>Команды</b>",
+      "/catalog — выбрать тариф и оплатить",
+      "/orders — список заказов",
+      "/support — общий чат с поддержкой (не привязан к заказу)",
+      "/email your@mail.com — привязать email (код придёт на почту)",
+      "/link ABCD-EFGH — привязать заказ с сайта по номеру",
+      "",
+      "После оплаты доступ на странице заказа. Вопросы — отправьте номер заказа в чат или откройте ссылку с сайта.",
+    ];
+
+    if (await isSupportTelegramUser(ctx.from!.id)) {
+      lines.push("", SUPPORT_STAFF_HELP);
+    }
+
+    await ctx.reply(lines.join("\n"), { parse_mode: "HTML" });
   });
 
   bot.command("email", async (ctx) => {
@@ -107,6 +155,26 @@ export function createSellBot(): Bot {
     }
 
     await beginEmailVerification(ctx, telegramUserId, email);
+  });
+
+  bot.command("link", async (ctx) => {
+    const telegramUserId = String(ctx.from!.id);
+    const arg = (ctx.message?.text ?? "").replace(/^\/link\s*/i, "").trim();
+
+    if (!arg) {
+      await ctx.reply(
+        "Отправьте номер заказа с сайта (например ABCD-EFGH) одним сообщением или: /link ABCD-EFGH",
+      );
+      return;
+    }
+
+    const linked = await linkOrderByNumber(telegramUserId, arg);
+    if (!linked.ok) {
+      await ctx.reply(linked.error);
+      return;
+    }
+
+    await attachOrderAndOpenChat(ctx, telegramUserId, linked.order.id);
   });
 
   bot.command("catalog", async (ctx) => {
@@ -316,9 +384,60 @@ export function createSellBot(): Bot {
       await ctx.reply("✅ Сообщение отправлено. Ответ придёт сюда и в /orders");
       return;
     }
+
+    if (!state.step && parseOrderNumberFromText(text)) {
+      const linked = await linkOrderByNumber(telegramUserId, text);
+      if (linked.ok) {
+        await attachOrderAndOpenChat(ctx, telegramUserId, linked.order.id);
+        return;
+      }
+      await ctx.reply(linked.error);
+      return;
+    }
   });
 
   return bot;
+}
+
+async function attachOrderAndOpenChat(
+  ctx: Context,
+  telegramUserId: string,
+  orderId: string,
+): Promise<void> {
+  const linked = await linkOrderToTelegramBuyer(telegramUserId, orderId);
+  if (!linked.ok) {
+    await ctx.reply(linked.error);
+    return;
+  }
+
+  const order = linked.order;
+  await setSessionState<SellBotState>(telegramUserId, "sell", {
+    step: "order_chat",
+    orderId: order.id,
+  });
+
+  const messages = await getOrderChatMessages(order.id);
+  const preview =
+    messages.length === 0
+      ? "Сообщений пока нет."
+      : messages
+          .slice(-5)
+          .map((m) => `${m.author === "seller" ? "🛟" : "👤"} ${truncate(m.body, 200)}`)
+          .join("\n\n");
+
+  const numberLabel = formatOrderNumber(order.orderNumber);
+
+  await ctx.reply(
+    [
+      `✅ Заказ <b>${escapeHtml(numberLabel)}</b> привязан.`,
+      `ID: <code>${order.id}</code>`,
+      "",
+      escapeHtml(preview),
+      "",
+      "Напишите сообщение для поддержки:",
+    ].join("\n"),
+    { parse_mode: "HTML" },
+  );
 }
 
 async function beginEmailVerification(
@@ -327,19 +446,22 @@ async function beginEmailVerification(
   email: string,
   planId?: string,
 ) {
+  const existing = await getSessionState<SellBotState>(telegramUserId, "sell");
+  const checkoutPlanId = planId ?? existing.planId;
+
   const result = await requestTelegramEmailVerification(telegramUserId, email);
   if (!result.ok) {
     const retryHint = result.retryAfterSeconds
       ? ` Повторите через ${result.retryAfterSeconds} сек.`
       : "";
-    await ctx.reply(`${result.error}.${retryHint}`);
+    await ctx.reply(`${result.error}${retryHint ? `.${retryHint}` : ""}`);
     return;
   }
 
   await setSessionState<SellBotState>(telegramUserId, "sell", {
     step: "awaiting_email_code",
     pendingEmail: result.email,
-    planId,
+    ...(checkoutPlanId ? { planId: checkoutPlanId } : {}),
   });
 
   await ctx.reply(

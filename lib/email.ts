@@ -17,6 +17,10 @@ const transporter = nodemailer.createTransport({
 
 const FROM = `"${process.env.SMTP_FROM_NAME ?? SITE_NAME}" <${process.env.SMTP_FROM_EMAIL}>`;
 
+export function isSmtpConfigured(): boolean {
+  return Boolean(process.env.SMTP_HOST?.trim() && process.env.SMTP_FROM_EMAIL?.trim());
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -26,6 +30,10 @@ export async function sendEmail({
   subject: string;
   template: React.ReactElement;
 }) {
+  if (!isSmtpConfigured()) {
+    throw new Error("SMTP is not configured (SMTP_HOST and SMTP_FROM_EMAIL required)");
+  }
+
   const html = await render(template);
   const text = await render(template, { plainText: true });
   await transporter.sendMail({ from: FROM, to, subject, html, text });

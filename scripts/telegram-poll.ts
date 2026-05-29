@@ -1,41 +1,26 @@
 /**
- * Local dev: long-polling for both bots (no public HTTPS required).
+ * Local dev: long-polling for the unified Telegram bot (no public HTTPS required).
  * Usage: pnpm telegram:poll
  */
 import "./load-env";
 import { createLogger, logError } from "../lib/logger-script";
-import { runTelegramCommandRegistration } from "../lib/telegram/commands";
+import { registerBotCommands } from "../lib/telegram/commands";
 import { createSellBot } from "../lib/telegram/bots/sell";
-import { createSupportBot } from "../lib/telegram/bots/support";
 
 const log = createLogger("telegram-poll");
 
 async function main() {
-  const sellToken = process.env.TELEGRAM_SELL_BOT_TOKEN?.trim();
-  const supportToken = process.env.TELEGRAM_SUPPORT_BOT_TOKEN?.trim();
+  const token = process.env.TELEGRAM_SELL_BOT_TOKEN?.trim();
 
-  if (!sellToken && !supportToken) {
-    log.error("Set TELEGRAM_SELL_BOT_TOKEN and/or TELEGRAM_SUPPORT_BOT_TOKEN");
+  if (!token) {
+    log.error("Set TELEGRAM_SELL_BOT_TOKEN in .env");
     process.exit(1);
   }
 
-  await runTelegramCommandRegistration();
-
-  const runners: Promise<void>[] = [];
-
-  if (sellToken) {
-    const bot = createSellBot();
-    log.info("sell bot polling");
-    runners.push(bot.start({ onStart: () => log.info("sell bot ready") }));
-  }
-
-  if (supportToken) {
-    const bot = createSupportBot();
-    log.info("support bot polling");
-    runners.push(bot.start({ onStart: () => log.info("support bot ready") }));
-  }
-
-  await Promise.all(runners);
+  const bot = createSellBot();
+  await registerBotCommands(bot);
+  log.info("telegram bot polling");
+  await bot.start({ onStart: () => log.info("telegram bot ready") });
 }
 
 main().catch((err) => {

@@ -16,6 +16,7 @@ import { useOrder } from "@/lib/orders/hooks";
 import type { OrderMessageRecord, OrderRecord } from "@/lib/orders/types";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderChat } from "@/components/orders/order-chat";
+import { TelegramBuyerSupport } from "@/components/orders/telegram-buyer-support";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +38,9 @@ type OrderExperienceProps = {
   accessToken: string | null;
   canManageFulfillment: boolean;
   authorRole: "buyer" | "seller";
+  telegramBotLabel: string;
+  telegramBotUrl: string | null;
+  orderNumberLabel: string;
 };
 
 export function OrderExperience({
@@ -46,7 +50,11 @@ export function OrderExperience({
   accessToken,
   canManageFulfillment,
   authorRole,
+  telegramBotLabel,
+  telegramBotUrl,
+  orderNumberLabel,
 }: OrderExperienceProps) {
+  const showStaffChat = canManageFulfillment;
   const { order, mutate } = useOrder(initialOrder.id, accessToken, {
     fallback: {
       order: initialOrder,
@@ -126,7 +134,8 @@ export function OrderExperience({
           <OrderStatusBadge status={order.status} />
         </div>
         <p className="text-sm text-muted-foreground">
-          № {order.id} ·{" "}
+          Номер <span className="font-mono font-medium text-foreground">{orderNumberLabel}</span>
+          {" · "}
           {format(new Date(order.createdAt), "d MMMM yyyy, HH:mm", {
             locale: ru,
           })}
@@ -139,8 +148,8 @@ export function OrderExperience({
           <AlertTitle>Сохраните ссылку на заказ</AlertTitle>
           <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span>
-              Это ваш личный доступ к покупке и чату с продавцом. Без ссылки
-              войти в заказ будет нельзя.
+              Это ваш личный доступ к заказу и данным доступа. Без ссылки войти
+              будет нельзя. Чат с поддержкой — в Telegram-боте.
             </span>
             <Button
               type="button"
@@ -197,8 +206,8 @@ export function OrderExperience({
               </pre>
             ) : order.status === "PAID" ? (
               <p className="text-sm text-muted-foreground">
-                Продавец готовит данные доступа. Вы получите их здесь или в чате
-                — можете задать вопрос справа.
+                Продавец готовит данные доступа. Они появятся здесь и придут на
+                email. Вопросы — в Telegram-боте (справа).
               </p>
             ) : order.status === "CANCELED" ? (
               <p className="text-sm text-muted-foreground">
@@ -236,15 +245,23 @@ export function OrderExperience({
           </CardContent>
         </Card>
 
-        <OrderChat
-          orderId={order.id}
-          accessToken={accessToken}
-          authorRole={authorRole}
-          initialMessages={initialMessages}
-          initialUnreadCount={initialUnreadCount}
-          orderLabel={order.planName}
-          className="min-h-0 lg:h-full lg:max-h-full"
-        />
+        {showStaffChat ? (
+          <OrderChat
+            orderId={order.id}
+            accessToken={accessToken}
+            authorRole={authorRole}
+            initialMessages={initialMessages}
+            initialUnreadCount={initialUnreadCount}
+            orderLabel={order.planName}
+            className="min-h-0 lg:h-full lg:max-h-full"
+          />
+        ) : (
+          <TelegramBuyerSupport
+            botLabel={telegramBotLabel}
+            botUrl={telegramBotUrl}
+            orderNumberLabel={orderNumberLabel}
+          />
+        )}
       </div>
 
       {error && (

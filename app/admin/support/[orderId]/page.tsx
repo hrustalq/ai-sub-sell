@@ -3,6 +3,7 @@ import { getSupportOrder } from "@/lib/support/queries";
 import { getOrderMessages } from "@/lib/orders/queries";
 import { getOrderUnreadCount, markOrderMessagesRead } from "@/lib/orders/read-state";
 import { requireSupport } from "@/lib/admin";
+import { formatOrderNumber } from "@/lib/orders/order-number";
 import { routes } from "@/lib/routes";
 import { AdminPageShell } from "@/app/admin/_components/admin-page-shell";
 import { SupportOrderView } from "@/app/admin/_components/support-order-view";
@@ -31,7 +32,7 @@ export default async function AdminSupportOrderPage({
       backHref={routes.admin.support}
       backLabel="← К заказам"
       title={order.planName}
-      description={`№ ${order.id}`}
+      description={`№ ${formatOrderNumber(order.orderNumber)}`}
     >
       <SupportOrderView
         order={{

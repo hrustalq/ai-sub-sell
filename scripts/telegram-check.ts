@@ -133,16 +133,15 @@ async function main() {
   }
 
   const sellToken = process.env.TELEGRAM_SELL_BOT_TOKEN?.trim();
-  const supportToken = process.env.TELEGRAM_SUPPORT_BOT_TOKEN?.trim();
 
-  if (!sellToken && !supportToken) {
-    log.error("Set TELEGRAM_SELL_BOT_TOKEN and/or TELEGRAM_SUPPORT_BOT_TOKEN in .env");
+  if (!sellToken) {
+    log.error("Set TELEGRAM_SELL_BOT_TOKEN in .env");
     process.exit(1);
   }
 
-  if (supportToken && !supportIds) {
+  if (!supportIds) {
     log.warn(
-      "support bot token set but TELEGRAM_SUPPORT_USER_IDS is empty — link staff Telegram IDs in admin panel (Админ → Telegram)",
+      "TELEGRAM_SUPPORT_USER_IDS is empty — link staff Telegram IDs in admin panel (Админ → Telegram)",
     );
   }
 

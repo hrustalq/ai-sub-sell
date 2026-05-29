@@ -34,6 +34,7 @@ export function SupportOrderView({
     fallback: {
       order: {
         id: initialOrder.id,
+        orderNumber: initialOrder.orderNumber,
         planId: initialOrder.planId,
         planName: initialOrder.planName,
         amount: initialOrder.amount,

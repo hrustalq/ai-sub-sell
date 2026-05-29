@@ -6,10 +6,6 @@ export function getSellBotToken(): string | null {
   return process.env.TELEGRAM_SELL_BOT_TOKEN?.trim() || null;
 }
 
-export function getSupportBotToken(): string | null {
-  return process.env.TELEGRAM_SUPPORT_BOT_TOKEN?.trim() || null;
-}
-
 export function getTelegramWebhookSecret(): string | null {
   return process.env.TELEGRAM_WEBHOOK_SECRET?.trim() || null;
 }
@@ -29,5 +25,5 @@ export function isLegacySupportTelegramUser(telegramUserId: string | number): bo
 }
 
 export function isTelegramConfigured(): boolean {
-  return Boolean(getSellBotToken() || getSupportBotToken());
+  return Boolean(getSellBotToken());
 }

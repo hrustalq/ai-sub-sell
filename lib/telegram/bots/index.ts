@@ -2,15 +2,12 @@ import "server-only";
 
 import type { Bot } from "grammy";
 import { createSellBot } from "@/lib/telegram/bots/sell";
-import { createSupportBot } from "@/lib/telegram/bots/support";
 import {
   getSellBotToken,
-  getSupportBotToken,
   getTelegramWebhookSecret,
 } from "@/lib/telegram/config";
 
 let sellBot: Bot | null = null;
-let supportBot: Bot | null = null;
 
 const initPromises = new WeakMap<Bot, Promise<void>>();
 
@@ -34,13 +31,6 @@ export function getSellBot(): Bot {
   return sellBot;
 }
 
-export function getSupportBot(): Bot {
-  if (!supportBot) {
-    supportBot = createSupportBot();
-  }
-  return supportBot;
-}
-
 export function verifyTelegramWebhookSecret(req: Request): boolean {
   const secret = getTelegramWebhookSecret();
   if (!secret) return true;
@@ -51,14 +41,6 @@ export function isSellBotEnabled(): boolean {
   return Boolean(getSellBotToken());
 }
 
-export function isSupportBotEnabled(): boolean {
-  return Boolean(getSupportBotToken());
-}
-
 export function ensureSellBotInitialized(): Promise<void> {
   return ensureBotInitialized(getSellBot());
-}
-
-export function ensureSupportBotInitialized(): Promise<void> {
-  return ensureBotInitialized(getSupportBot());
 }

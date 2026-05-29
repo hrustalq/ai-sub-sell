@@ -11,13 +11,24 @@ import { normalizeEmail } from "@/lib/users/placeholder";
 
 const log = createLogger("telegram-orders");
 
+async function buyerOrderScope(telegramUserId: string) {
+  const account = await getTelegramAccount(telegramUserId);
+  return {
+    OR: [
+      { buyerTelegramUserId: telegramUserId },
+      ...(account?.email ? [{ buyerEmail: account.email }] : []),
+    ],
+  };
+}
+
 export async function listBuyerTelegramOrders(telegramUserId: string) {
   return db.order.findMany({
-    where: { buyerTelegramUserId: telegramUserId },
+    where: await buyerOrderScope(telegramUserId),
     orderBy: { createdAt: "desc" },
     take: 20,
     select: {
       id: true,
+      orderNumber: true,
       planName: true,
       amount: true,
       currency: true,
@@ -35,9 +46,10 @@ export async function getBuyerTelegramOrder(
   orderId: string,
 ) {
   return db.order.findFirst({
-    where: { id: orderId, buyerTelegramUserId: telegramUserId },
+    where: { id: orderId, ...(await buyerOrderScope(telegramUserId)) },
     select: {
       id: true,
+      orderNumber: true,
       planName: true,
       amount: true,
       currency: true,

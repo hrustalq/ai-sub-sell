@@ -15,6 +15,13 @@ export async function GET(
     return Response.json({ error: "Доступ запрещён" }, { status: 403 });
   }
 
+  if (access.authorRole === "buyer") {
+    return Response.json(
+      { error: "Чат с поддержкой доступен в Telegram-боте." },
+      { status: 403 },
+    );
+  }
+
   const [messages, unreadCount] = await Promise.all([
     getOrderMessages(orderId),
     getOrderUnreadCount(orderId, access.authorRole),
@@ -39,6 +46,13 @@ export async function POST(
   const access = await getOrderAccessContext(orderId, token);
   if (!access) {
     return Response.json({ error: "Доступ запрещён" }, { status: 403 });
+  }
+
+  if (access.authorRole === "buyer") {
+    return Response.json(
+      { error: "Чат с поддержкой доступен в Telegram-боте. Откройте /orders в боте." },
+      { status: 403 },
+    );
   }
 
   let body: string;

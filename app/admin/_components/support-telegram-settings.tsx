@@ -1,4 +1,4 @@
-import { getSupportBotToken } from "@/lib/telegram/config";
+import { getSellBotToken } from "@/lib/telegram/config";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserTelegramForm } from "@/app/admin/_components/user-telegram-form";
 
@@ -13,27 +13,28 @@ export function SupportTelegramSettings({
   apiUrl,
   canEdit = true,
 }: SupportTelegramSettingsProps) {
-  const botConfigured = Boolean(getSupportBotToken());
+  const botConfigured = Boolean(getSellBotToken());
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Бот поддержки в Telegram</CardTitle>
+        <CardTitle>Telegram для поддержки</CardTitle>
         <CardDescription>
-          Привяжите Telegram ID, чтобы получать уведомления и отвечать покупателям из бота.
+          Привяжите Telegram ID, чтобы получать уведомления и отвечать покупателям в том же боте, что и покупатели.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!botConfigured && (
           <p className="text-sm text-muted-foreground">
-            Бот поддержки не настроен на сервере (TELEGRAM_SUPPORT_BOT_TOKEN).
+            Telegram-бот не настроен на сервере (TELEGRAM_SELL_BOT_TOKEN).
           </p>
         )}
 
         <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
           <li>Откройте @userinfobot в Telegram и скопируйте ваш числовой ID</li>
-          <li>Найдите бота поддержки и отправьте ему /start</li>
+          <li>Найдите бота магазина и отправьте ему /start</li>
           <li>Введите ID ниже и сохраните</li>
+          <li>Для работы с заказами: /inbox и /tickets</li>
         </ol>
 
         <UserTelegramForm

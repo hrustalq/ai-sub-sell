@@ -20,8 +20,16 @@ export async function scheduleMessageEmailReminders(params: {
   const sendAfter = new Date(Date.now() + REMINDER_DELAY_MS);
   const recipients: { email: string; viewer: MessageViewer }[] = [];
 
+  const order = await db.order.findUnique({
+    where: { id: params.orderId },
+    select: { buyerTelegramUserId: true },
+  });
+
   if (params.messageAuthor === "seller") {
-    recipients.push({ email: params.buyerEmail, viewer: "buyer" });
+    // Web buyers use Telegram for chat; Telegram buyers get instant bot notifications.
+    if (!order?.buyerTelegramUserId) {
+      recipients.push({ email: params.buyerEmail, viewer: "buyer" });
+    }
   } else {
     for (const email of await getSupportNotificationEmails()) {
       recipients.push({ email, viewer: "seller" });

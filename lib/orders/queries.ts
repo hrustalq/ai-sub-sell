@@ -7,6 +7,7 @@ export async function getOrderForBuyerPage(orderId: string) {
     where: { id: orderId },
     select: {
       id: true,
+      orderNumber: true,
       planId: true,
       planName: true,
       amount: true,
