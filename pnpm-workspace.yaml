@@ -2,8 +2,13 @@ packages:
   - '.'
 
 allowBuilds:
+  '@datadog/native-appsec': true
+  '@datadog/native-iast-taint-tracking': true
+  '@datadog/native-metrics': true
+  '@datadog/pprof': true
   "@prisma/engines": true
   better-sqlite3: true
+  dd-trace: true
   esbuild: true
   msw: true
   prisma: true

@@ -257,11 +257,37 @@ pnpm exec prisma migrate deploy
 
 **Fresh local database:** use `pnpm db:push` or `pnpm db:migrate:dev` (empty DB still needs full schema first — `db:push` is simplest locally).
 
-## 7. Logs
+## 7. Logs and Datadog
 
-The app logs structured JSON to stdout; systemd captures it in the journal (`SyslogIdentifier=ai-sub-sell`).
+The app logs structured JSON with [Pino](https://getpino.io/) to stdout; systemd captures it in the journal (`SyslogIdentifier=ai-sub-sell`). In production, `dd-trace` loads via `datadog-preload.cjs` (see systemd `NODE_OPTIONS`) for APM and automatic trace ID injection into JSON logs (`dd.trace_id`, `dd.span_id`).
 
-On the VPS, from the app directory:
+### Datadog Agent (production)
+
+One-time on the VPS as root:
+
+```bash
+sudo DD_API_KEY=your-key DD_SITE=datadoghq.com bash /opt/ai-sub-sell/app/deploy/setup-datadog.sh
+```
+
+This installs the Agent, enables journald log collection for `ai-sub-sell.service`, and ships logs to Datadog Log Explorer. Traces go to the local Agent on port 8126.
+
+Set in `shared/.env` (optional — defaults are applied by `datadog-preload.cjs`):
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `DD_TRACE_ENABLED` | `true` in prod | Disable with `false` |
+| `DD_SERVICE` | `ai-sub-sell` | Service name in Datadog |
+| `DD_ENV` | `production` | Environment tag |
+| `DD_SITE` | `datadoghq.com` | EU: `datadoghq.eu` |
+| `DD_API_KEY` | — | Required for Agent install script |
+
+After changing systemd `NODE_OPTIONS`, re-apply the unit from the repo and restart:
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart ai-sub-sell
+```
+
+### Local journal (VPS)
 
 ```bash
 cd /opt/ai-sub-sell/app
@@ -293,6 +319,16 @@ Env (in `shared/.env`):
 | `LOG_LEVEL` | `info` (prod), `debug` (dev) | Minimum log level |
 | `LOG_PRETTY` | `false` in prod | Human-readable dev output |
 | `LOG_PRISMA_QUERIES` | `false` | Log every SQL query (verbose) |
+
+### Local dev with Datadog
+
+```bash
+# APM + log correlation
+DD_TRACE_ENABLED=true pnpm dev:dd
+
+# Ship logs directly (no Agent) — do not enable on VPS with journald collection
+DD_TRACE_ENABLED=true DD_API_KEY=... DD_LOGS_HTTP=true pnpm dev:dd
+```
 
 ## 8. Troubleshooting
 

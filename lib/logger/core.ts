@@ -1,4 +1,10 @@
-import pino, { type Logger, type LoggerOptions } from "pino";
+import pino, { type Logger, type LoggerOptions, type StreamEntry } from "pino";
+
+import {
+  datadogHttpLogsEnabled,
+  getDatadogLogBase,
+} from "../datadog/config";
+import { createDatadogLogStream } from "../datadog/logs";
 
 const REDACT_PATHS = [
   "req.headers.authorization",
@@ -16,6 +22,7 @@ const REDACT_PATHS = [
   "GOOGLE_CLIENT_SECRET",
   "GITHUB_CLIENT_SECRET",
   "CRON_SECRET",
+  "DD_API_KEY",
 ];
 
 export function isProduction(): boolean {
@@ -49,10 +56,18 @@ function buildLoggerOptions(): LoggerOptions {
     },
     base: {
       pid: process.pid,
-      env: process.env.NODE_ENV ?? "development",
+      ...getDatadogLogBase(),
     },
     timestamp: pino.stdTimeFunctions.isoTime,
   };
+}
+
+function buildProductionStreams(): StreamEntry[] {
+  const streams: StreamEntry[] = [{ stream: process.stdout }];
+  if (datadogHttpLogsEnabled()) {
+    streams.push({ stream: createDatadogLogStream() });
+  }
+  return streams;
 }
 
 let rootLogger: Logger | undefined;
@@ -60,19 +75,23 @@ let rootLogger: Logger | undefined;
 export function getRootLogger(): Logger {
   if (!rootLogger) {
     const options = buildLoggerOptions();
-    rootLogger = shouldUsePretty()
-      ? pino({
-          ...options,
-          transport: {
-            target: "pino-pretty",
-            options: {
-              colorize: true,
-              translateTime: "SYS:standard",
-              ignore: "pid,hostname",
-            },
+    if (shouldUsePretty()) {
+      rootLogger = pino({
+        ...options,
+        transport: {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+            ignore: "pid,hostname",
           },
-        })
-      : pino(options);
+        },
+      });
+    } else if (datadogHttpLogsEnabled()) {
+      rootLogger = pino(options, pino.multistream(buildProductionStreams()));
+    } else {
+      rootLogger = pino(options);
+    }
   }
   return rootLogger;
 }

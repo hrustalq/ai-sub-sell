@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:dd": "NODE_OPTIONS='--require ./datadog-preload.cjs' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -12,9 +13,9 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
-    "telegram:poll": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",
-    "telegram:webhooks": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-set-webhooks.ts",
-    "telegram:check": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-check.ts",
+    "telegram:poll": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-poll.ts",
+    "telegram:webhooks": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-set-webhooks.ts",
+    "telegram:check": "NODE_OPTIONS='--require ./datadog-preload.cjs' tsx --tsconfig scripts/tsconfig.scripts.json scripts/telegram-check.ts",
     "logs": "bash scripts/logs.sh follow",
     "logs:follow": "bash scripts/logs.sh follow",
     "logs:tail": "bash scripts/logs.sh tail",
@@ -35,6 +36,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.2.1",
+    "dd-trace": "^5.104.0",
     "embla-carousel-react": "^8.6.0",
     "grammy": "^1.43.0",
     "input-otp": "^1.4.2",
@@ -73,5 +75,14 @@
     "tailwindcss": "^4",
     "tsx": "^4.22.3",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "dd-trace",
+      "@datadog/native-appsec",
+      "@datadog/native-iast-taint-tracking",
+      "@datadog/native-metrics",
+      "@datadog/pprof"
+    ]
   }
 }

@@ -11,7 +11,7 @@ EnvironmentFile=__ENV_FILE__
 Environment=NODE_ENV=production
 Environment=PORT=3000
 # Broken IPv6 routes cause 10s timeouts to api.telegram.org before IPv4 is tried.
-Environment=NODE_OPTIONS=--dns-result-order=ipv4first
+Environment=NODE_OPTIONS=--require __APP_DIR__/datadog-preload.cjs --dns-result-order=ipv4first
 ExecStart=/usr/bin/env pnpm start
 Restart=on-failure
 RestartSec=5

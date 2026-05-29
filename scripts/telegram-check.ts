@@ -88,8 +88,10 @@ async function checkBot(bot: TelegramBotWebhookConfig): Promise<boolean> {
     log.info({ label: bot.label, url: info.url }, "webhook OK");
   }
 
-  if (info?.pending_update_count) {
-    log.warn({ label: bot.label, count: info.pending_update_count }, "pending updates");
+  const pendingUpdates = info?.pending_update_count ?? 0;
+  if (pendingUpdates > 0) {
+    log.warn({ label: bot.label, count: pendingUpdates }, "pending updates");
+    ok = false;
   }
 
   if (info?.last_error_message) {
@@ -98,12 +100,26 @@ async function checkBot(bot: TelegramBotWebhookConfig): Promise<boolean> {
     const ageMs = errorAt ? Date.now() - errorAt : 0;
     const staleErrorMs = 15 * 60 * 1000;
     const stale = ageMs > staleErrorMs;
-    const logFn = stale ? log.warn.bind(log) : log.error.bind(log);
+    // Telegram keeps last_error_message after recovery; an empty queue means delivery caught up.
+    const recovered = pendingUpdates === 0;
+    const activeFailure = !stale && !recovered;
+    const logFn = activeFailure ? log.error.bind(log) : log.warn.bind(log);
     logFn(
-      { label: bot.label, when, message: info.last_error_message, stale },
-      stale ? "last webhook error (stale)" : "last webhook error",
+      {
+        label: bot.label,
+        when,
+        message: info.last_error_message,
+        stale,
+        recovered,
+        pendingUpdates,
+      },
+      activeFailure
+        ? "last webhook error"
+        : recovered
+          ? "last webhook error (queue empty — likely recovered)"
+          : "last webhook error (stale)",
     );
-    if (!stale) {
+    if (activeFailure) {
       ok = false;
     }
   }
